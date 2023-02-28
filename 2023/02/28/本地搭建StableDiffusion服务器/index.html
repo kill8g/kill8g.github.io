@@ -26,7 +26,7 @@
 <meta property="og:description" content="使用版本 : AUTOMATIC1111 系统 : windows10 64位 显卡 : GTX1050Ti 显卡驱动版本 : 516.94 CUDA 版本 : 11.7 显存 : 理论上至少需要4GB以上, 但我只有1GB显存, 但是在修改启动脚本参数后也能够勉强运行, 方法之后附上 依赖程序 :   Git 官网下载安装即可, 版本不重要, 记得添加到环境变量中 Python 建议使用3.1">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2023-02-28T02:25:33.000Z">
-<meta property="article:modified_time" content="2023-02-28T06:31:48.835Z">
+<meta property="article:modified_time" content="2023-02-28T07:32:37.301Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="StableDiffusion">
 <meta name="twitter:card" content="summary">
@@ -350,7 +350,7 @@
         <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2023/02/28/%E6%9C%AC%E5%9C%B0%E6%90%AD%E5%BB%BAStableDiffusion%E6%9C%8D%E5%8A%A1%E5%99%A8/#comments" class="article-comment-link">评论</a></span>
         
 	
-		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 835(字)</span>
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 897(字)</span>
 	
 	
 		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 3(分)</span>
@@ -395,11 +395,11 @@
 <li><p>启动 webui-user.bat即可启动</p>
 </li>
 <li><p>测试, 因为显卡不够, 所以生成的时候需要注意参数设置, width和heigh尽量不要超过512, 以下是测试使用的prompt :</p>
-<p>(masterpiece : 1.331),<br>best quality,<br>cartoon,<br>(a girl : 1.331),<br>double ponytail,<br>long bangs,<br>big eyes,<br>black eyes,<br>black hair,<br>skirt,<br>standing under a big tree,<br>flowers all over the floor</p>
+<p>(masterpiece : 1.331),<br>best quality,<br>cartoon,<br>(a girl : 1.331),<br>double ponytail,<br>long bangs,<br>big eyes,<br>black eyes,<br>black hair,<br>skirt,<br>standing under a big tree,<br>flowers all over the floor<br>生成的图片就不放出来了.</p>
 <p>每个条件用逗号分隔, 详细用法自行百度, 描述应当准确详细, 生成的图片质量才会好一点</p>
 </li>
 <li><p>下载模型包, 模型包才是stablediffusion的灵魂, 下载地址 :<br><a href="">https://huggingface.co/models?sort=downloads</a></p>
-<p>将下载的ckpt文件或者safetensors格式包放到./models/Stable-diffusion/目录下即可</p>
+<p>将下载的ckpt文件或者safetensors格式包放到./models/Stable-diffusion/目录下即可<br>1G显存实在不够用, 很多模型包都没法使用, 限制太多, 一下几个模型包测试过基本可用:<br>models–dreamlike-art–dreamlike-photoreal-2.0<br>momoko-any3.0.vae.pt<br>v1-5-pruned-emaonly.safetensors</p>
 </li>
 </ol>
 
