@@ -17,21 +17,21 @@
   <meta http-equiv="window-target" content="_top" />
   
   
-  <title>2. 两数相加 | 我见青山</title>
-  <meta name="description" content="题目描述给你两个 非空 的链表，表示两个非负的整数。它们每位数字都是按照 逆序 的方式存储的，并且每个节点只能存储 一位 数字。请你将两个数相加，并以相同形式返回一个表示和的链表。你可以假设除了数字 0 之外，这两个数都不会以 0 开头。 思路遍历计算每一位, 计算的同事需要考虑到进位的问题遍历计算结束后, 如果有进位, 需要在返回的链表添加一个节点储存1使用多个指针, 一个指向头节点, 一个指向">
+  <title>3. 无重复字符的最长子串 | 我见青山</title>
+  <meta name="description" content="LeetCode https:&#x2F;&#x2F;leetcode.cn&#x2F;problems&#x2F;longest-substring-without-repeating-characters&#x2F; 题目描述给定一个字符串 s ，请你找出其中不含有重复字符的 最长子串 的长度。 思路利用滑动窗口求解遍历字符串, 当字符在滑动窗口中(出现重复), 更新窗口, 将最左边的元素移除, 直到满足要求 代码12345678910111">
 <meta property="og:type" content="article">
-<meta property="og:title" content="2. 两数相加">
-<meta property="og:url" content="https://www.kill8g.com/2023/03/01/%E4%B8%A4%E6%95%B0%E7%9B%B8%E5%8A%A0/index.html">
+<meta property="og:title" content="3. 无重复字符的最长子串">
+<meta property="og:url" content="https://www.kill8g.com/2023/03/06/%E6%97%A0%E9%87%8D%E5%A4%8D%E5%AD%97%E7%AC%A6%E7%9A%84%E6%9C%80%E9%95%BF%E5%AD%90%E4%B8%B2/index.html">
 <meta property="og:site_name" content="我见青山">
-<meta property="og:description" content="题目描述给你两个 非空 的链表，表示两个非负的整数。它们每位数字都是按照 逆序 的方式存储的，并且每个节点只能存储 一位 数字。请你将两个数相加，并以相同形式返回一个表示和的链表。你可以假设除了数字 0 之外，这两个数都不会以 0 开头。 思路遍历计算每一位, 计算的同事需要考虑到进位的问题遍历计算结束后, 如果有进位, 需要在返回的链表添加一个节点储存1使用多个指针, 一个指向头节点, 一个指向">
+<meta property="og:description" content="LeetCode https:&#x2F;&#x2F;leetcode.cn&#x2F;problems&#x2F;longest-substring-without-repeating-characters&#x2F; 题目描述给定一个字符串 s ，请你找出其中不含有重复字符的 最长子串 的长度。 思路利用滑动窗口求解遍历字符串, 当字符在滑动窗口中(出现重复), 更新窗口, 将最左边的元素移除, 直到满足要求 代码12345678910111">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2023-03-01T10:41:54.926Z">
-<meta property="article:modified_time" content="2023-03-01T10:41:54.922Z">
+<meta property="article:published_time" content="2023-03-06T03:29:31.000Z">
+<meta property="article:modified_time" content="2023-03-06T07:49:59.675Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="C++">
 <meta name="twitter:card" content="summary">
   <!-- Canonical links -->
-  <link rel="canonical" href="https://www.kill8g.com/2023/03/01/%E4%B8%A4%E6%95%B0%E7%9B%B8%E5%8A%A0/index.html">
+  <link rel="canonical" href="https://www.kill8g.com/2023/03/06/%E6%97%A0%E9%87%8D%E5%A4%8D%E5%AD%97%E7%AC%A6%E7%9A%84%E6%9C%80%E9%95%BF%E5%AD%90%E4%B8%B2/index.html">
   
   
     <link rel="icon" href="/favicon.png" type="image/x-icon">
@@ -179,7 +179,7 @@
   <div class="widget">
     <h3 class="widget-title">分类</h3>
     <div class="widget-body">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/AI/">AI</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/LeetCode-%E7%BB%8F%E5%85%B8100%E9%A2%98/">LeetCode 经典100题</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/docker/">docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/linux/">linux</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/lua/">lua</a><span class="category-list-count">2</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/AI/">AI</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/LeetCode-%E7%BB%8F%E5%85%B8100%E9%A2%98/">LeetCode 经典100题</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/docker/">docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/linux/">linux</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/lua/">lua</a><span class="category-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -189,7 +189,7 @@
   <div class="widget">
     <h3 class="widget-title">标签</h3>
     <div class="widget-body">
-      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C++</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/StableDiffusion/" rel="tag">StableDiffusion</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/" rel="tag">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/lua/" rel="tag">lua</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/shell/" rel="tag">shell</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C++</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/StableDiffusion/" rel="tag">StableDiffusion</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/" rel="tag">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/lua/" rel="tag">lua</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/shell/" rel="tag">shell</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -199,7 +199,7 @@
   <div class="widget">
     <h3 class="widget-title">标签云</h3>
     <div class="widget-body tagcloud">
-      <a href="/tags/C/" style="font-size: 14px;">C++</a> <a href="/tags/StableDiffusion/" style="font-size: 13px;">StableDiffusion</a> <a href="/tags/docker/" style="font-size: 13px;">docker</a> <a href="/tags/linux/" style="font-size: 13px;">linux</a> <a href="/tags/lua/" style="font-size: 14px;">lua</a> <a href="/tags/shell/" style="font-size: 13px;">shell</a>
+      <a href="/tags/C/" style="font-size: 14px;">C++</a> <a href="/tags/StableDiffusion/" style="font-size: 13px;">StableDiffusion</a> <a href="/tags/docker/" style="font-size: 13px;">docker</a> <a href="/tags/linux/" style="font-size: 13px;">linux</a> <a href="/tags/lua/" style="font-size: 13.5px;">lua</a> <a href="/tags/shell/" style="font-size: 13px;">shell</a>
     </div>
   </div>
 
@@ -208,7 +208,7 @@
   <div class="widget">
     <h3 class="widget-title">归档</h3>
     <div class="widget-body">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">三月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">二月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">一月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">十二月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">九月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/02/">二月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/01/">一月 2022</a><span class="archive-list-count">1</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">三月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">二月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">一月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">十二月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">九月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/05/">五月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/02/">二月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/01/">一月 2022</a><span class="archive-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -227,10 +227,10 @@
                 <a class="category-link" href="/categories/LeetCode-%E7%BB%8F%E5%85%B8100%E9%A2%98/">LeetCode 经典100题</a>
               </p>
               <p class="item-title">
-                <a href="/2023/03/01/%E4%B8%A4%E6%95%B0%E7%9B%B8%E5%8A%A0/" class="title">2. 两数相加</a>
+                <a href="/2023/03/06/%E6%97%A0%E9%87%8D%E5%A4%8D%E5%AD%97%E7%AC%A6%E7%9A%84%E6%9C%80%E9%95%BF%E5%AD%90%E4%B8%B2/" class="title">3. 无重复字符的最长子串</a>
               </p>
               <p class="item-date">
-                <time datetime="2023-03-01T10:41:54.926Z" itemprop="datePublished">2023-03-01</time>
+                <time datetime="2023-03-06T03:29:31.000Z" itemprop="datePublished">2023-03-06</time>
               </p>
             </div>
           </li>
@@ -308,14 +308,14 @@
   
 <main class="main" role="main">
   <div class="content">
-  <article id="post-两数相加" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+  <article id="post-无重复字符的最长子串" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
     
     <div class="article-header">
       
         
   
     <h1 class="article-title" itemprop="name">
-      2. 两数相加
+      3. 无重复字符的最长子串
     </h1>
   
 
@@ -323,8 +323,8 @@
       <div class="article-meta">
         <span class="article-date">
     <i class="icon icon-calendar-check"></i>
-	<a href="/2023/03/01/%E4%B8%A4%E6%95%B0%E7%9B%B8%E5%8A%A0/" class="article-date">
-	  <time datetime="2023-03-01T10:41:54.926Z" itemprop="datePublished">2023-03-01</time>
+	<a href="/2023/03/06/%E6%97%A0%E9%87%8D%E5%A4%8D%E5%AD%97%E7%AC%A6%E7%9A%84%E6%9C%80%E9%95%BF%E5%AD%90%E4%B8%B2/" class="article-date">
+	  <time datetime="2023-03-06T03:29:31.000Z" itemprop="datePublished">2023-03-06</time>
 	</a>
 </span>
         
@@ -344,13 +344,13 @@
 
 	<span class="article-read hidden-xs">
     	<i class="icon icon-eye-fill" aria-hidden="true"></i>
-    	<span id="/2023/03/01/%E4%B8%A4%E6%95%B0%E7%9B%B8%E5%8A%A0/" class="leancloud_visitors"  data-flag-title="2. 两数相加">0</span>
+    	<span id="/2023/03/06/%E6%97%A0%E9%87%8D%E5%A4%8D%E5%AD%97%E7%AC%A6%E7%9A%84%E6%9C%80%E9%95%BF%E5%AD%90%E4%B8%B2/" class="leancloud_visitors"  data-flag-title="3. 无重复字符的最长子串">0</span>
     </span>
 
-        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2023/03/01/%E4%B8%A4%E6%95%B0%E7%9B%B8%E5%8A%A0/#comments" class="article-comment-link">评论</a></span>
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2023/03/06/%E6%97%A0%E9%87%8D%E5%A4%8D%E5%AD%97%E7%AC%A6%E7%9A%84%E6%9C%80%E9%95%BF%E5%AD%90%E4%B8%B2/#comments" class="article-comment-link">评论</a></span>
         
 	
-		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 317(字)</span>
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 183(字)</span>
 	
 	
 		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 1(分)</span>
@@ -360,9 +360,12 @@
     </div>
     <div class="article-entry marked-body" itemprop="articleBody">
       
-        <h5 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h5><p>给你两个 非空 的链表，表示两个非负的整数。它们每位数字都是按照 逆序 的方式存储的，并且每个节点只能存储 一位 数字。<br>请你将两个数相加，并以相同形式返回一个表示和的链表。<br>你可以假设除了数字 0 之外，这两个数都不会以 0 开头。</p>
-<h5 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h5><p>遍历计算每一位, 计算的同事需要考虑到进位的问题<br>遍历计算结束后, 如果有进位, 需要在返回的链表添加一个节点储存1<br>使用多个指针, 一个指向头节点, 一个指向当前节点</p>
-<h5 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h5><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;ctime&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;random&gt;</span></span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">ListNode</span> &#123;</span><br><span class="line">	<span class="type">int</span> val;</span><br><span class="line">	ListNode *next;</span><br><span class="line">	<span class="built_in">ListNode</span>() : <span class="built_in">val</span>(<span class="number">0</span>), <span class="built_in">next</span>(<span class="literal">NULL</span>) &#123;&#125;</span><br><span class="line">	<span class="built_in">ListNode</span>(<span class="type">int</span> x) : <span class="built_in">val</span>(x), <span class="built_in">next</span>(<span class="literal">NULL</span>) &#123;&#125;</span><br><span class="line">	<span class="built_in">ListNode</span>(<span class="type">int</span> x, ListNode *next) : <span class="built_in">val</span>(x), <span class="built_in">next</span>(next) &#123;&#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="function">ListNode* <span class="title">addTwoNumbers</span><span class="params">(ListNode* l1, ListNode* l2)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">auto</span> a = l1;</span><br><span class="line">		<span class="keyword">auto</span> b = l2;</span><br><span class="line">		ListNode * result = <span class="keyword">new</span> <span class="built_in">ListNode</span>(<span class="number">0</span>);</span><br><span class="line">		ListNode * head = result;</span><br><span class="line">		<span class="type">int</span> carry = <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">while</span> (a || b || carry) &#123;</span><br><span class="line">			<span class="keyword">auto</span> sum = <span class="number">0</span>;</span><br><span class="line">			<span class="keyword">if</span> (a) &#123;</span><br><span class="line">				sum += a-&gt;val;</span><br><span class="line">				a = a-&gt;next;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">if</span> (b) &#123;</span><br><span class="line">				sum += b-&gt;val;</span><br><span class="line">				b = b-&gt;next;</span><br><span class="line">			&#125;</span><br><span class="line">			sum += carry;</span><br><span class="line">			carry = sum / <span class="number">10</span>;</span><br><span class="line">			result-&gt;val = sum % <span class="number">10</span>;</span><br><span class="line">			<span class="keyword">if</span> (a || b || carry) &#123;</span><br><span class="line">				result-&gt;next = <span class="keyword">new</span> <span class="built_in">ListNode</span>(<span class="number">0</span>);</span><br><span class="line">				result = result-&gt;next;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> head;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+        <p>LeetCode <a target="_blank" rel="noopener" href="https://leetcode.cn/problems/longest-substring-without-repeating-characters/">https://leetcode.cn/problems/longest-substring-without-repeating-characters/</a></p>
+<h5 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h5><p>给定一个字符串 s ，请你找出其中不含有<strong>重复字符</strong>的 <strong>最长子串</strong> 的长度。</p>
+<h5 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h5><p>利用<strong>滑动窗口</strong>求解<br>遍历字符串, 当字符在滑动窗口中(出现重复), 更新窗口, 将最左边的元素移除, 直到满足要求</p>
+<h5 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h5><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="function"><span class="type">int</span> <span class="title">lengthOfLongestSubstring</span><span class="params">(std::string s)</span> </span>&#123;</span><br><span class="line">		std::vector&lt;<span class="type">char</span>&gt; window;</span><br><span class="line">		<span class="type">int</span> max = <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; s.<span class="built_in">size</span>(); i++) &#123;</span><br><span class="line">			<span class="keyword">auto</span> size = window.<span class="built_in">size</span>() - <span class="number">1</span>;</span><br><span class="line">			<span class="type">char</span> c = s[i];</span><br><span class="line">			<span class="keyword">if</span> (size &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">				<span class="keyword">for</span> (<span class="type">int</span> j = size, count = <span class="number">0</span>; j &gt;= <span class="number">0</span>; j--, count++) &#123;</span><br><span class="line">					<span class="keyword">if</span> (window[j] == c) &#123;</span><br><span class="line">						window.<span class="built_in">erase</span>(window.<span class="built_in">begin</span>(), window.<span class="built_in">begin</span>() + (window.<span class="built_in">size</span>() - count));</span><br><span class="line">						<span class="keyword">break</span>;</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">			window.<span class="built_in">push_back</span>(c);</span><br><span class="line">			<span class="keyword">auto</span> len = window.<span class="built_in">size</span>();</span><br><span class="line">			<span class="keyword">if</span> (len &gt; max)</span><br><span class="line">				max = len;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> max;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+
 
       
     </div>
@@ -372,7 +375,7 @@
     
     <li class="post-copyright-link hidden-xs">
       <strong>本文链接：</strong>
-      <a href="https://www.kill8g.com/2023/03/01/%E4%B8%A4%E6%95%B0%E7%9B%B8%E5%8A%A0/" title="2. 两数相加" target="_blank" rel="external">https://www.kill8g.com/2023/03/01/两数相加/</a>
+      <a href="https://www.kill8g.com/2023/03/06/%E6%97%A0%E9%87%8D%E5%A4%8D%E5%AD%97%E7%AC%A6%E7%9A%84%E6%9C%80%E9%95%BF%E5%AD%90%E4%B8%B2/" title="3. 无重复字符的最长子串" target="_blank" rel="external">https://www.kill8g.com/2023/03/06/无重复字符的最长子串/</a>
     </li>
     
     <li class="post-copyright-license">
