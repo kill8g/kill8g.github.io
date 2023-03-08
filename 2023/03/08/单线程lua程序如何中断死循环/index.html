@@ -17,21 +17,21 @@
   <meta http-equiv="window-target" content="_top" />
   
   
-  <title>GDB通过设置断点查找内存泄漏 | 我见青山</title>
-  <meta name="description" content="在GDB中, 可以通过break命令设置断点, 然后通过commands命令让断点被触发时自动执行一组命令 用法: 12345b function namecommands... &#x2F;&#x2F; 任何有效的gdb命令, 每一行一个命令end  我们使用这个功能来查找C&#x2F;C++程序中的内存泄漏, 而不用修改编译任何代码 具体思路:  对malloc设置断点, 在触发断点后, 记录log到文件 对free设置断">
+  <title>单线程lua程序如何中断死循环 | 我见青山</title>
+  <meta name="description" content="lua底层没有提供检查死循环的接口, 在不影响性能的情况下, 比较可行的方法是检测脚本执行时间, 超过一定的时限, 就认为存在死循环多线程下, 可以在其他线程中监测是否存在执行时间异常的脚本, 单线程下就会麻烦一点这里提供一种单线程下的死循环检查方法, 通过lua_sethook跟signal来解决死循环问题 12345678910111213141516171819202122232425262">
 <meta property="og:type" content="article">
-<meta property="og:title" content="GDB通过设置断点查找内存泄漏">
-<meta property="og:url" content="https://www.kill8g.com/2023/03/07/GDB%E9%80%9A%E8%BF%87%E8%AE%BE%E7%BD%AE%E6%96%AD%E7%82%B9%E6%9F%A5%E6%89%BE%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F/index.html">
+<meta property="og:title" content="单线程lua程序如何中断死循环">
+<meta property="og:url" content="https://www.kill8g.com/2023/03/08/%E5%8D%95%E7%BA%BF%E7%A8%8Blua%E7%A8%8B%E5%BA%8F%E5%A6%82%E4%BD%95%E4%B8%AD%E6%96%AD%E6%AD%BB%E5%BE%AA%E7%8E%AF/index.html">
 <meta property="og:site_name" content="我见青山">
-<meta property="og:description" content="在GDB中, 可以通过break命令设置断点, 然后通过commands命令让断点被触发时自动执行一组命令 用法: 12345b function namecommands... &#x2F;&#x2F; 任何有效的gdb命令, 每一行一个命令end  我们使用这个功能来查找C&#x2F;C++程序中的内存泄漏, 而不用修改编译任何代码 具体思路:  对malloc设置断点, 在触发断点后, 记录log到文件 对free设置断">
+<meta property="og:description" content="lua底层没有提供检查死循环的接口, 在不影响性能的情况下, 比较可行的方法是检测脚本执行时间, 超过一定的时限, 就认为存在死循环多线程下, 可以在其他线程中监测是否存在执行时间异常的脚本, 单线程下就会麻烦一点这里提供一种单线程下的死循环检查方法, 通过lua_sethook跟signal来解决死循环问题 12345678910111213141516171819202122232425262">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2023-03-07T05:58:43.000Z">
-<meta property="article:modified_time" content="2023-03-07T06:02:37.275Z">
+<meta property="article:published_time" content="2023-03-08T09:50:48.000Z">
+<meta property="article:modified_time" content="2023-03-08T10:09:12.325Z">
 <meta property="article:author" content="John Doe">
-<meta property="article:tag" content="GDB">
+<meta property="article:tag" content="lua">
 <meta name="twitter:card" content="summary">
   <!-- Canonical links -->
-  <link rel="canonical" href="https://www.kill8g.com/2023/03/07/GDB%E9%80%9A%E8%BF%87%E8%AE%BE%E7%BD%AE%E6%96%AD%E7%82%B9%E6%9F%A5%E6%89%BE%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F/index.html">
+  <link rel="canonical" href="https://www.kill8g.com/2023/03/08/%E5%8D%95%E7%BA%BF%E7%A8%8Blua%E7%A8%8B%E5%BA%8F%E5%A6%82%E4%BD%95%E4%B8%AD%E6%96%AD%E6%AD%BB%E5%BE%AA%E7%8E%AF/index.html">
   
   
     <link rel="icon" href="/favicon.png" type="image/x-icon">
@@ -308,14 +308,14 @@
   
 <main class="main" role="main">
   <div class="content">
-  <article id="post-GDB通过设置断点查找内存泄漏" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+  <article id="post-单线程lua程序如何中断死循环" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
     
     <div class="article-header">
       
         
   
     <h1 class="article-title" itemprop="name">
-      GDB通过设置断点查找内存泄漏
+      单线程lua程序如何中断死循环
     </h1>
   
 
@@ -323,20 +323,20 @@
       <div class="article-meta">
         <span class="article-date">
     <i class="icon icon-calendar-check"></i>
-	<a href="/2023/03/07/GDB%E9%80%9A%E8%BF%87%E8%AE%BE%E7%BD%AE%E6%96%AD%E7%82%B9%E6%9F%A5%E6%89%BE%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F/" class="article-date">
-	  <time datetime="2023-03-07T05:58:43.000Z" itemprop="datePublished">2023-03-07</time>
+	<a href="/2023/03/08/%E5%8D%95%E7%BA%BF%E7%A8%8Blua%E7%A8%8B%E5%BA%8F%E5%A6%82%E4%BD%95%E4%B8%AD%E6%96%AD%E6%AD%BB%E5%BE%AA%E7%8E%AF/" class="article-date">
+	  <time datetime="2023-03-08T09:50:48.000Z" itemprop="datePublished">2023-03-08</time>
 	</a>
 </span>
         
   <span class="article-category">
     <i class="icon icon-folder"></i>
-    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+    <a class="article-category-link" href="/categories/lua/">lua</a>
   </span>
 
         
   <span class="article-tag">
     <i class="icon icon-tags"></i>
-	<a class="article-tag-link-link" href="/tags/GDB/" rel="tag">GDB</a>
+	<a class="article-tag-link-link" href="/tags/lua/" rel="tag">lua</a>
   </span>
 
 
@@ -344,44 +344,26 @@
 
 	<span class="article-read hidden-xs">
     	<i class="icon icon-eye-fill" aria-hidden="true"></i>
-    	<span id="/2023/03/07/GDB%E9%80%9A%E8%BF%87%E8%AE%BE%E7%BD%AE%E6%96%AD%E7%82%B9%E6%9F%A5%E6%89%BE%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F/" class="leancloud_visitors"  data-flag-title="GDB通过设置断点查找内存泄漏">0</span>
+    	<span id="/2023/03/08/%E5%8D%95%E7%BA%BF%E7%A8%8Blua%E7%A8%8B%E5%BA%8F%E5%A6%82%E4%BD%95%E4%B8%AD%E6%96%AD%E6%AD%BB%E5%BE%AA%E7%8E%AF/" class="leancloud_visitors"  data-flag-title="单线程lua程序如何中断死循环">0</span>
     </span>
 
-        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2023/03/07/GDB%E9%80%9A%E8%BF%87%E8%AE%BE%E7%BD%AE%E6%96%AD%E7%82%B9%E6%9F%A5%E6%89%BE%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F/#comments" class="article-comment-link">评论</a></span>
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2023/03/08/%E5%8D%95%E7%BA%BF%E7%A8%8Blua%E7%A8%8B%E5%BA%8F%E5%A6%82%E4%BD%95%E4%B8%AD%E6%96%AD%E6%AD%BB%E5%BE%AA%E7%8E%AF/#comments" class="article-comment-link">评论</a></span>
         
 	
-		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 641(字)</span>
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 392(字)</span>
 	
 	
-		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 3(分)</span>
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 1(分)</span>
 	
 
       </div>
     </div>
     <div class="article-entry marked-body" itemprop="articleBody">
       
-        <p>在GDB中, 可以通过break命令设置断点, 然后通过<strong>commands</strong>命令让断点被触发时自动执行一组命令</p>
-<p>用法:</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">b function name</span><br><span class="line">commands</span><br><span class="line">... // 任何有效的gdb命令, 每一行一个命令</span><br><span class="line">end</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>我们使用这个功能来查找C/C++程序中的内存泄漏, 而不用修改编译任何代码</p>
-<p>具体思路:</p>
-<ol>
-<li>对<strong>malloc</strong>设置断点, 在触发断点后, 记录log到文件</li>
-<li>对free设置断点, 在触发断点后, 记录log到文件</li>
-<li>对比log日志, malloc申请内存的次数大于free释放内存的次数, 说明存在内存泄漏</li>
-</ol>
-<p>测试代码如下:</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string&gt;</span></span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">test</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; <span class="number">3</span>; ++i) &#123;</span><br><span class="line">		<span class="type">int</span> * p = (<span class="type">int</span>*)<span class="built_in">malloc</span>(<span class="built_in">sizeof</span>(<span class="type">int</span>));</span><br><span class="line">		<span class="built_in">free</span>(p);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="built_in">test</span>();</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>GDB命令如下:</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">创建.gdbinit文件, gdb启动时会自动加载该文件</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">在文件内定义命令</span></span><br><span class="line">define call_malloc</span><br><span class="line">printf &quot;call malloc :\n&quot;</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">打印堆栈</span></span><br><span class="line">bt</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">继续执行程序</span></span><br><span class="line">continue</span><br><span class="line">end</span><br><span class="line"></span><br><span class="line">define call_free</span><br><span class="line">printf &quot;call free :\n&quot;</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">打印堆栈</span></span><br><span class="line">bt</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">继续执行程序</span></span><br><span class="line">continue</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
-
-<p>启动gdb, 开始调试</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">gdb a.out</span><br><span class="line">set pagination off # 输出信息太多时不会暂停输出</span><br><span class="line">set logging on log.txt # 指定log文件路径</span><br><span class="line"></span><br><span class="line">b malloc 	# 对malloc设置断点</span><br><span class="line">commands 	# 执行一组命令</span><br><span class="line">call_malloc 	# .gdbinit中的自定义命令</span><br><span class="line">end		# 命令组结束</span><br><span class="line"></span><br><span class="line">b free		# 对free设置断点</span><br><span class="line">commands	# 执行一组命令</span><br><span class="line">call_free	# .gdbinit中的自定义命令</span><br><span class="line">end		# 命令组结束</span><br><span class="line"></span><br><span class="line">run # 开始运行</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>等待程序运行结束后查看log.txt文件即可</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">Breakpoint 1, __GI___libc_malloc (bytes=4) at malloc.c:2894</span><br><span class="line">2894    &#123;</span><br><span class="line">call malloc :</span><br><span class="line">#0  __GI___libc_malloc (bytes=4) at malloc.c:2894</span><br><span class="line">#1  0x00000000004005b8 in test () at main.cpp:10</span><br><span class="line">#2  0x00000000004005dd in main () at main.cpp:16</span><br><span class="line"></span><br><span class="line">Breakpoint 1, __GI___libc_malloc (bytes=4) at malloc.c:2894</span><br><span class="line">2894    &#123;</span><br><span class="line">call malloc :</span><br><span class="line">#0  __GI___libc_malloc (bytes=4) at malloc.c:2894</span><br><span class="line">#1  0x00000000004005b8 in test () at main.cpp:10</span><br><span class="line">#2  0x00000000004005dd in main () at main.cpp:16</span><br><span class="line"></span><br><span class="line">Breakpoint 2, __GI___libc_free (mem=0x602010) at malloc.c:2930</span><br><span class="line">2930        = force_reg (__free_hook);</span><br><span class="line">call free :</span><br><span class="line">#0  __GI___libc_free (mem=0x602010) at malloc.c:2930</span><br><span class="line">#1  0x00000000004005c8 in test () at main.cpp:11</span><br><span class="line">#2  0x00000000004005dd in main () at main.cpp:16</span><br><span class="line"></span><br><span class="line">Breakpoint 1, __GI___libc_malloc (bytes=4) at malloc.c:2894</span><br><span class="line">2894    &#123;</span><br><span class="line">call malloc :</span><br><span class="line">#0  __GI___libc_malloc (bytes=4) at malloc.c:2894</span><br><span class="line">#1  0x00000000004005b8 in test () at main.cpp:10</span><br><span class="line">#2  0x00000000004005dd in main () at main.cpp:16</span><br><span class="line"></span><br><span class="line">Breakpoint 2, __GI___libc_free (mem=0x602010) at malloc.c:2930</span><br><span class="line">2930        = force_reg (__free_hook);</span><br><span class="line">call free :</span><br><span class="line">#0  __GI___libc_free (mem=0x602010) at malloc.c:2930</span><br><span class="line">#1  0x00000000004005c8 in test () at main.cpp:11</span><br><span class="line">#2  0x00000000004005dd in main () at main.cpp:16</span><br><span class="line"></span><br><span class="line">Breakpoint 1, __GI___libc_malloc (bytes=4) at malloc.c:2894</span><br><span class="line">2894    &#123;</span><br><span class="line">call malloc :</span><br><span class="line">#0  __GI___libc_malloc (bytes=4) at malloc.c:2894</span><br><span class="line">#1  0x00000000004005b8 in test () at main.cpp:10</span><br><span class="line">#2  0x00000000004005dd in main () at main.cpp:16</span><br><span class="line"></span><br><span class="line">Breakpoint 2, __GI___libc_free (mem=0x602010) at malloc.c:2930</span><br><span class="line">2930        = force_reg (__free_hook);</span><br><span class="line">call free :</span><br><span class="line">#0  __GI___libc_free (mem=0x602010) at malloc.c:2930</span><br><span class="line">#1  0x00000000004005c8 in test () at main.cpp:11</span><br><span class="line">#2  0x00000000004005dd in main () at main.cpp:16</span><br><span class="line">[Inferior 1 (process 14425) exited normally]</span><br></pre></td></tr></table></figure>
+        <p>lua底层没有提供检查死循环的接口, 在不影响性能的情况下, 比较可行的方法是检测脚本执行时间, 超过一定的时限, 就认为存在死循环<br>多线程下, 可以在其他线程中监测是否存在执行时间异常的脚本, 单线程下就会麻烦一点<br>这里提供一种单线程下的死循环检查方法, 通过<strong>lua_sethook</strong>跟<strong>signal</strong>来解决死循环问题</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">static</span> <span class="type">void</span> <span class="title">lstop</span> <span class="params">(lua_State * L, lua_Debug * ar)</span> </span>&#123;</span><br><span class="line">	(<span class="type">void</span>)ar;  <span class="comment">/* unused arg. */</span></span><br><span class="line">	<span class="built_in">lua_sethook</span>(L, <span class="literal">NULL</span>, <span class="number">0</span>, <span class="number">0</span>);  <span class="comment">/* reset hook */</span></span><br><span class="line">	<span class="comment">// 抛出一个错误</span></span><br><span class="line">	<span class="built_in">luaL_error</span>(L, <span class="string">&quot;There may be an endless loop !&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">static</span> <span class="type">void</span> <span class="title">laction</span> <span class="params">(<span class="type">int</span> i)</span> </span>&#123;</span><br><span class="line">	<span class="built_in">signal</span>(i, SIG_DFL); <span class="comment">/* if another SIGINT happens, terminate process */</span></span><br><span class="line">	<span class="comment">/*</span></span><br><span class="line"><span class="comment">	  设置钩子函数, 当调用一个函数时, 从一个函数中返回时, 执行指定数量的指令时</span></span><br><span class="line"><span class="comment">	  就会执行一次钩子函数 lstop</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="built_in">lua_sethook</span>(L, lstop, LUA_MASKCALL | LUA_MASKRET | LUA_MASKCOUNT, <span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">run</span><span class="params">(<span class="type">const</span> <span class="type">char</span> * path)</span> </span>&#123;</span><br><span class="line">	L = <span class="built_in">luaL_newstate</span>();</span><br><span class="line">	<span class="built_in">luaL_openlibs</span>(L);</span><br><span class="line">	<span class="built_in">luaL_checkversion</span>(L);</span><br><span class="line"></span><br><span class="line">	<span class="type">int</span> result = <span class="built_in">luaL_loadfile</span>(L, path);</span><br><span class="line">	<span class="keyword">if</span> (result != <span class="number">0</span>) &#123;</span><br><span class="line">		<span class="type">const</span> <span class="type">char</span> * error = <span class="built_in">lua_tostring</span>(L, <span class="number">-1</span>);</span><br><span class="line">		_EXIT_(<span class="string">&quot;Load lua file [%s] failed, error : %s\n&quot;</span>, path, error);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="built_in">alarm</span>(<span class="number">5</span>); <span class="comment">/*设置闹钟 一个进程只能有一个闹钟时间*/</span></span><br><span class="line">	<span class="built_in">signal</span>(SIGALRM, laction); <span class="comment">/*闹钟触发后, 调用laction*/</span></span><br><span class="line">	result = <span class="built_in">lua_pcall</span>(L, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">	<span class="built_in">alarm</span>(<span class="number">0</span>); <span class="comment">/*取消闹钟*/</span></span><br><span class="line">	<span class="built_in">signal</span>(SIGALRM, SIG_DFL); <span class="comment">/*SIGALRM恢复为默认信号处理程序*/</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (result != <span class="number">0</span>) &#123;</span><br><span class="line">		<span class="type">const</span> <span class="type">char</span> * error = <span class="built_in">lua_tostring</span>(L, <span class="number">-1</span>);</span><br><span class="line">		_EXIT_(<span class="string">&quot;Call lua failed, error : %s\n&quot;</span>, error);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	_EXIT_(<span class="string">&quot;Exit the lua VM\n&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="keyword">local</span> loop = <span class="literal">true</span></span><br><span class="line">	<span class="keyword">while</span> loop <span class="keyword">do</span></span><br><span class="line">	<span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line">main()</span><br></pre></td></tr></table></figure>
+<p>启动测试, 5s后可以看到死循环被中断了<br>Call lua failed, error : script.lua:6: There may be an endless loop !</p>
 
       
     </div>
@@ -391,7 +373,7 @@
     
     <li class="post-copyright-link hidden-xs">
       <strong>本文链接：</strong>
-      <a href="https://www.kill8g.com/2023/03/07/GDB%E9%80%9A%E8%BF%87%E8%AE%BE%E7%BD%AE%E6%96%AD%E7%82%B9%E6%9F%A5%E6%89%BE%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F/" title="GDB通过设置断点查找内存泄漏" target="_blank" rel="external">https://www.kill8g.com/2023/03/07/GDB通过设置断点查找内存泄漏/</a>
+      <a href="https://www.kill8g.com/2023/03/08/%E5%8D%95%E7%BA%BF%E7%A8%8Blua%E7%A8%8B%E5%BA%8F%E5%A6%82%E4%BD%95%E4%B8%AD%E6%96%AD%E6%AD%BB%E5%BE%AA%E7%8E%AF/" title="单线程lua程序如何中断死循环" target="_blank" rel="external">https://www.kill8g.com/2023/03/08/单线程lua程序如何中断死循环/</a>
     </li>
     
     <li class="post-copyright-license">
@@ -437,13 +419,9 @@
   
   <ul class="pager pull-left">
     
-    <li class="prev">
-      <a href="/2023/03/07/linux%E4%B8%8BC%E7%A8%8B%E5%BA%8FCPU%E5%8D%A0%E7%94%A8%E7%8E%87%E5%A4%AA%E9%AB%98%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5/" title="linux下C程序CPU占用率太高问题排查"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
-    </li>
-    
     
     <li class="next">
-      <a href="/2023/03/06/%E6%97%A0%E9%87%8D%E5%A4%8D%E5%AD%97%E7%AC%A6%E7%9A%84%E6%9C%80%E9%95%BF%E5%AD%90%E4%B8%B2/" title="算法 3. 无重复字符的最长子串"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+      <a href="/2023/03/07/linux%E4%B8%8BC%E7%A8%8B%E5%BA%8FCPU%E5%8D%A0%E7%94%A8%E7%8E%87%E5%A4%AA%E9%AB%98%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5/" title="linux下C程序CPU占用率太高问题排查"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
     </li>
     
     
