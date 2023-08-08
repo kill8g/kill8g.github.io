@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>本地搭建StableDiffusion服务器 | 山中</title>
+  <meta name="description" content="使用版本 : AUTOMATIC1111 系统 : windows10 64位 显卡 : GTX1050Ti 显卡驱动版本 : 516.94 CUDA 版本 : 11.7 显存 : 理论上至少需要4GB以上, 但我只有1GB显存, 但是在修改启动脚本参数后也能够勉强运行, 方法之后附上 依赖程序 :   Git 官网下载安装即可, 版本不重要, 记得添加到环境变量中 Python 建议使用3.1">
+<meta property="og:type" content="article">
+<meta property="og:title" content="本地搭建StableDiffusion服务器">
+<meta property="og:url" content="https://www.kill8g.com/2023/02/28/%E6%9C%AC%E5%9C%B0%E6%90%AD%E5%BB%BAStableDiffusion%E6%9C%8D%E5%8A%A1%E5%99%A8/index.html">
+<meta property="og:site_name" content="山中">
+<meta property="og:description" content="使用版本 : AUTOMATIC1111 系统 : windows10 64位 显卡 : GTX1050Ti 显卡驱动版本 : 516.94 CUDA 版本 : 11.7 显存 : 理论上至少需要4GB以上, 但我只有1GB显存, 但是在修改启动脚本参数后也能够勉强运行, 方法之后附上 依赖程序 :   Git 官网下载安装即可, 版本不重要, 记得添加到环境变量中 Python 建议使用3.1">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-02-28T02:25:33.000Z">
+<meta property="article:modified_time" content="2023-08-08T10:17:29.014Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="StableDiffusion">
+<meta name="twitter:card" content="summary">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://www.kill8g.com/2023/02/28/%E6%9C%AC%E5%9C%B0%E6%90%AD%E5%BB%BAStableDiffusion%E6%9C%8D%E5%8A%A1%E5%99%A8/index.html">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+
+<body class="main-center theme-black" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/kill8g" target="_blank">
+          <img class="img-circle img-rotate" src="/images/logo1.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">山中</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Developer</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Guangzhou, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form" method="GET" action="https://www.baidu.com/s?">
+	<div class="input-group">
+    	<input name="wd" type="text" class="form-control search-form-input" placeholder="搜索" />
+	    <span class="input-group-btn">
+	    	<button type="submit" class=" btn btn-flat search-form-submit"><i class="icon icon-search"></i></button>
+	    </span>
+    </div>
+</form>
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/kill8g" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/AI/">AI</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C/">C++</a><span class="category-list-count">6</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/C/http/">http</a><span class="category-list-count">1</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/C/http/lua/">lua</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/C/lua/">lua</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/LeetCode/">LeetCode</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">6</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/Android/">Android</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/OLLVM/">OLLVM</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/docker/">docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/lua/">lua</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/mongo/">mongo</a><span class="category-list-count">3</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/mongo/python/">python</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/redis/">redis</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/server/">server</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%85%B6%E4%BB%96/">其他</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C++</a><span class="tag-list-count">24</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-C/" rel="tag">C/C++</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GDB/" rel="tag">GDB</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OLLVM/" rel="tag">OLLVM</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/StableDiffusion/" rel="tag">StableDiffusion</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/http/" rel="tag">http</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/lua/" rel="tag">lua</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongo/" rel="tag">mongo</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/" rel="tag">python</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/" rel="tag">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/server/" rel="tag">server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/shell/" rel="tag">shell</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%85%B6%E4%BB%96/" rel="tag">其他</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/C/" style="font-size: 13px;">C</a> <a href="/tags/C/" style="font-size: 14px;">C++</a> <a href="/tags/C-C/" style="font-size: 13px;">C/C++</a> <a href="/tags/GDB/" style="font-size: 13px;">GDB</a> <a href="/tags/Linux/" style="font-size: 13.5px;">Linux</a> <a href="/tags/OLLVM/" style="font-size: 13px;">OLLVM</a> <a href="/tags/StableDiffusion/" style="font-size: 13px;">StableDiffusion</a> <a href="/tags/docker/" style="font-size: 13px;">docker</a> <a href="/tags/http/" style="font-size: 13px;">http</a> <a href="/tags/lua/" style="font-size: 13.75px;">lua</a> <a href="/tags/mongo/" style="font-size: 13.5px;">mongo</a> <a href="/tags/python/" style="font-size: 13.25px;">python</a> <a href="/tags/redis/" style="font-size: 13px;">redis</a> <a href="/tags/server/" style="font-size: 13px;">server</a> <a href="/tags/shell/" style="font-size: 13px;">shell</a> <a href="/tags/%E5%85%B6%E4%BB%96/" style="font-size: 13px;">其他</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/08/">八月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">七月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">六月 2023</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">五月 2023</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">四月 2023</a><span class="archive-list-count">16</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">三月 2023</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">二月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">一月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">十二月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">九月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/05/">五月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/02/">二月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/01/">一月 2022</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/08/02/excelop/" class="title">Excel数据导出工具</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-08-02T02:15:42.000Z" itemprop="datePublished">2023-08-02</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/LeetCode/">LeetCode</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/07/11/four-number/" class="title">算法 18. 四数之和</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-07-11T02:12:14.000Z" itemprop="datePublished">2023-07-11</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/LeetCode/">LeetCode</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/06/12/phone-number/" class="title">算法 17. 电话号码的字母组合</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-06-12T02:08:50.000Z" itemprop="datePublished">2023-06-12</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/C/">C++</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/06/07/aoi/" class="title">游戏服务器AOI算法-九宫格</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-06-07T10:45:13.000Z" itemprop="datePublished">2023-06-07</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/C/">C++</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/06/02/memory-pool/" class="title">一种特定环境使用的简易内存池</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-06-02T03:08:24.000Z" itemprop="datePublished">2023-06-02</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-本地搭建StableDiffusion服务器" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      本地搭建StableDiffusion服务器
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2023/02/28/%E6%9C%AC%E5%9C%B0%E6%90%AD%E5%BB%BAStableDiffusion%E6%9C%8D%E5%8A%A1%E5%99%A8/" class="article-date">
+	  <time datetime="2023-02-28T02:25:33.000Z" itemprop="datePublished">2023-02-28</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/AI/">AI</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/StableDiffusion/" rel="tag">StableDiffusion</a>
+  </span>
+
+
+        
+
+	<span class="article-read hidden-xs">
+    	<i class="icon icon-eye-fill" aria-hidden="true"></i>
+    	<span id="/2023/02/28/%E6%9C%AC%E5%9C%B0%E6%90%AD%E5%BB%BAStableDiffusion%E6%9C%8D%E5%8A%A1%E5%99%A8/" class="leancloud_visitors"  data-flag-title="本地搭建StableDiffusion服务器">0</span>
+    </span>
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2023/02/28/%E6%9C%AC%E5%9C%B0%E6%90%AD%E5%BB%BAStableDiffusion%E6%9C%8D%E5%8A%A1%E5%99%A8/#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 873(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 3(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <hr>
+<p>使用版本 : AUTOMATIC1111</p>
+<p>系统 : windows10 64位</p>
+<p>显卡 : GTX1050Ti</p>
+<p>显卡驱动版本 : 516.94</p>
+<p>CUDA 版本 : 11.7</p>
+<p>显存 : 理论上至少需要4GB以上, 但我只有1GB显存, 但是在修改启动脚本参数后也能够勉强运行, 方法之后附上</p>
+<p>依赖程序 : </p>
+<ol>
+<li>Git 官网下载安装即可, 版本不重要, 记得添加到环境变量中</li>
+<li>Python 建议使用3.10.9版本或更新版本, 下载地址 : <a target="_blank" rel="noopener" href="https://mirrors.huaweicloud.com/python/3.10.9/python-3.10.9-amd64.exe">https://mirrors.huaweicloud.com/python/3.10.9/python-3.10.9-amd64.exe</a>, 记得需要将python添加到环境变量中</li>
+<li>Nvidia CUDA 这里可以查看显卡驱动对应的CUDA版本 : <a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html">https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html</a> 这里可以下载各版本的CUDA : <a target="_blank" rel="noopener" href="https://developer.nvidia.com/cuda-toolkit">https://developer.nvidia.com/cuda-toolkit</a></li>
+</ol>
+<p>网络代理(可选):</p>
+<p><a target="_blank" rel="noopener" href="https://ghproxy.com/https://github.com/docmirror/dev-sidecar/releases/download/v1.7.3/DevSidecar-1.7.3.exe">https://ghproxy.com/https://github.com/docmirror/dev-sidecar/releases/download/v1.7.3/DevSidecar-1.7.3.exe</a></p>
+<p>安装完毕后记得安装根证书, 点击 <em>pip加速</em>,选择使用aliyun镜像</p>
+<h5 id="服务器搭建流程-默认已经安装完成各种依赖程序"><a href="#服务器搭建流程-默认已经安装完成各种依赖程序" class="headerlink" title="服务器搭建流程(默认已经安装完成各种依赖程序)"></a>服务器搭建流程(默认已经安装完成各种依赖程序)</h5><ol>
+<li>更新pip<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install --upgrade pip</span><br></pre></td></tr></table></figure></li>
+<li>PyTorch 安装 因为我用的是CUDA11.7, 所以链接地址是11.7的下载地址, 如果你用的是其他版本, 需要修改为对应的下载地址<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu117</span><br></pre></td></tr></table></figure></li>
+<li>下载 <strong>StableDiffusionWebUI</strong> 代码<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone https://ghproxy.com/https://github.com/AUTOMATIC1111/stable-diffusion-webui.git stable-diffusion-webui</span><br></pre></td></tr></table></figure></li>
+<li>编辑launch.py 这个python文件中会使用到git, 国内git访问速度较慢, 添加代理, 具体流程如下:<br>搜索<em><a target="_blank" rel="noopener" href="https://github.com/">https://github.com/</a></em>, 替换为<em><a target="_blank" rel="noopener" href="https://ghproxy.com/https://github.com/">https://ghproxy.com/https://github.com/</a></em></li>
+<li>创建python环境<figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> stable-diffusion-webui</span><br><span class="line"><span class="comment">rem 创建环境</span></span><br><span class="line">python -m venv .\venv</span><br><span class="line"><span class="built_in">cd</span> .\venv\Script</span><br><span class="line"><span class="comment">rem 激活环境</span></span><br><span class="line">.\activate.bat</span><br><span class="line"><span class="comment">rem 回到项目根目录</span></span><br><span class="line"><span class="built_in">cd</span> ..\..\</span><br><span class="line"><span class="comment">rem 安装依赖库, 可能需要很久</span></span><br><span class="line">pip install -r requirements_versions.txt</span><br></pre></td></tr></table></figure></li>
+<li>编译安装xformers(可选)<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/facebookresearch/xformers.git repositories/xformers</span><br><span class="line">cd repositories/xformers</span><br><span class="line">git submodule update --init --recursive</span><br><span class="line">pip install -r requirements.txt</span><br><span class="line">pip install -e .</span><br></pre></td></tr></table></figure></li>
+<li>修改webui-user.bat<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">@echo off</span><br><span class="line"></span><br><span class="line">:: %medvram 6GB及以上显存%</span><br><span class="line">:: %lowvram 4GB以上%</span><br><span class="line">:: %lowram 16GB以上%</span><br><span class="line">:: %skip-torch-cuda-test 去掉显卡内存检查%</span><br><span class="line">:: xformers 启用xformers</span><br><span class="line">:: deepdanbooru 插件</span><br><span class="line">:: precision full 最高精度</span><br><span class="line">:: no-half 不要将模型切换到16位浮点数</span><br><span class="line"></span><br><span class="line">set PYTHON=</span><br><span class="line">set GIT=</span><br><span class="line">set VENV_DIR=venv</span><br><span class="line">:: 如果你的显卡是4GB COMMANDLINE_ARGS最后添加 --lowvram 6GB就是--medvram 16GB--lowram</span><br><span class="line">:: 如果有安装xformers, 可以添加--xformers </span><br><span class="line">:: 显卡满足条件的(4GB及以上)可以去掉--skip-torch-cuda-test</span><br><span class="line">:: 如果你像我一样只有1G显卡, 这里就像我一样配置就可以了</span><br><span class="line">set COMMANDLINE_ARGS=--precision full --no-half --skip-torch-cuda-test --always-batch-cond-uncond</span><br><span class="line"></span><br><span class="line">call webui.bat</span><br></pre></td></tr></table></figure></li>
+<li>启动 命令行输入webui-user.bat即可启动</li>
+<li>测试 浏览器输入<a target="_blank" rel="noopener" href="http://127.0.0.1:7860/">http://127.0.0.1:7860/</a> 因为显卡不够, 所以生成的时候需要注意参数设置, width和heigh尽量不要超过512, 以下是测试使用的prompt :<br>(masterpiece : 1.331),<br>best quality,<br>cartoon,<br>(a girl : 1.331),<br>double ponytail,<br>long bangs,<br>big eyes,<br>black eyes,<br>black hair,<br>skirt,<br>standing under a big tree,<br>flowers all over the floor<br>生成的图片就不放出来了.<br>每个条件用逗号分隔, 详细用法自行百度, 描述应当准确详细, 生成的图片质量才会好一点</li>
+<li>下载模型包 模型包才是stablediffusion的灵魂, 下载地址 :<br><a target="_blank" rel="noopener" href="https://huggingface.co/models?sort=downloads">https://huggingface.co/models?sort=downloads</a><br>将下载的ckpt文件或者safetensors格式包放到./models/Stable-diffusion/目录下即可<br>1G显存实在不够用, 很多模型包都没法使用, 限制太多, 以下几个模型包测试过基本可用:<br>models–dreamlike-art–dreamlike-photoreal-2.0<br>momoko-any3.0.vae.pt<br>v1-5-pruned-emaonly.safetensors</li>
+</ol>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://www.kill8g.com/2023/02/28/%E6%9C%AC%E5%9C%B0%E6%90%AD%E5%BB%BAStableDiffusion%E6%9C%8D%E5%8A%A1%E5%99%A8/" title="本地搭建StableDiffusion服务器" target="_blank" rel="external">https://www.kill8g.com/2023/02/28/本地搭建StableDiffusion服务器/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/kill8g" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/logo1.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/kill8g" target="_blank"><span class="text-dark">山中</span><small class="ml-1x">Developer</small></a></h3>
+        <div>游戏行业 后端developer</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+      <div id="vcomments"></div>
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2023/03/06/%E6%97%A0%E9%87%8D%E5%A4%8D%E5%AD%97%E7%AC%A6%E7%9A%84%E6%9C%80%E9%95%BF%E5%AD%90%E4%B8%B2/" title="算法 3. 无重复字符的最长子串"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2023/01/20/lua%E5%BC%B1%E5%BC%95%E7%94%A8%E6%A3%80%E6%9F%A5%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F%E7%9A%84%E7%AE%80%E5%8D%95%E7%A4%BA%E4%BE%8B/" title="lua弱引用检查内存泄漏的简单示例"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  <!-- Button trigger modal -->
+  <button type="button" class="btn btn-fancy btn-donate pop-onhover bg-gradient-warning" data-toggle="modal" data-target="#donateModal"><span>赏</span></button>
+  <!-- <div class="wave-icon wave-icon-danger btn-donate" data-toggle="modal" data-target="#donateModal">
+    <div class="wave-circle"><span class="icon"><i class="icon icon-bill"></i></span></div>
+  </div> -->
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+<!-- Modal -->
+<div class="modal modal-center modal-small modal-xs-full fade" id="donateModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content donate">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <div class="modal-body">
+        <div class="donate-box">
+          <div class="donate-head">
+            <p>感谢您的支持，我会继续努力的!</p>
+          </div>
+          <div class="tab-content">
+            <div role="tabpanel" class="tab-pane fade active in" id="alipay">
+              <div class="donate-payimg">
+                <img src="/images/donate/alipayimg.jpg" alt="扫码支持" title="扫一扫" />
+              </div>
+              <p class="text-muted mv">扫码打赏，你说多少就多少</p>
+              <p class="text-grey">打开支付宝扫一扫，即可进行扫码打赏哦</p>
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="wechatpay">
+              <div class="donate-payimg">
+                <img src="/images/donate/wechatpayimg.jpg" alt="扫码支持" title="扫一扫" />
+              </div>
+              <p class="text-muted mv">扫码打赏，你说多少就多少</p>
+              <p class="text-grey">打开微信扫一扫，即可进行扫码打赏哦</p>
+            </div>
+          </div>
+          <div class="donate-footer">
+            <ul class="nav nav-tabs nav-justified" role="tablist">
+              <li role="presentation" class="active">
+                <a href="#alipay" id="alipay-tab" role="tab" data-toggle="tab" aria-controls="alipay" aria-expanded="true"><i class="icon icon-alipay"></i> 支付宝</a>
+              </li>
+              <li role="presentation" class="">
+                <a href="#wechatpay" role="tab" id="wechatpay-tab" data-toggle="tab" aria-controls="wechatpay" aria-expanded="false"><i class="icon icon-wepay"></i> 微信支付</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/kill8g" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        &copy; 2023 John Doe
+        
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+
+    <script>
+(function ($) {
+    $('.search-form').on('submit', function (e) {
+        var keyword = $('.search-form-input[name="wd"]').val();
+        window.location = 'https://www.baidu.com/s?wd=site:www.kill8g.com ' + keyword;
+        return false;
+    });
+})(jQuery);
+</script>
+
+
+
+
+   
+
+
+
+
+   
+    
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/valine"></script>
+  <script type="text/javascript">
+  var GUEST = ['nick', 'mail', 'link'];
+  var meta = 'nick,mail,link';
+  meta = meta.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#vcomments',
+    verify: false,
+    notify: false,
+    appId: 'chpRJDWJKRNocLBljQezqwMi-gzGzoHsz',
+    appKey: '3bC8bWGlDrur1ab5V4SjDuQ5',
+    placeholder: 'Just go go',
+    avatar: 'mm',
+    meta: meta,
+    pageSize: '10' || 10,
+    visitor: true
+  });
+  </script>
+
+     
+
+
+
+
+
+
+
+</body>
+</html>

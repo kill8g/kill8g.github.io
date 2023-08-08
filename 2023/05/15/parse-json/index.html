@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>使用C++解析json字符串 | 山中</title>
+  <meta name="description" content="使用C++解析json字符串项目github地址解析思路 定义枚举类型, 包括 null, bool, float, int, string, array, object 顺序遍历字符串, 跳过所有的空白字段, 并根据遇到的第一个有效字符尝试各种解析方案 当字符为n时, 尝试解析为null 当字符为t或f时, 尝试解析为bool值 当字符为-或者数字时, 尝试解析为数值 当字符为&quot;时,">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用C++解析json字符串">
+<meta property="og:url" content="https://www.kill8g.com/2023/05/15/parse-json/index.html">
+<meta property="og:site_name" content="山中">
+<meta property="og:description" content="使用C++解析json字符串项目github地址解析思路 定义枚举类型, 包括 null, bool, float, int, string, array, object 顺序遍历字符串, 跳过所有的空白字段, 并根据遇到的第一个有效字符尝试各种解析方案 当字符为n时, 尝试解析为null 当字符为t或f时, 尝试解析为bool值 当字符为-或者数字时, 尝试解析为数值 当字符为&quot;时,">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-05-15T09:50:37.000Z">
+<meta property="article:modified_time" content="2023-05-15T09:51:24.191Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="linux,c&#x2F;c++,python,lua,ios,u3d">
+<meta name="twitter:card" content="summary">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://www.kill8g.com/2023/05/15/parse-json/index.html">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+
+<body class="main-center theme-black" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/kill8g" target="_blank">
+          <img class="img-circle img-rotate" src="/images/logo1.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">山中</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Developer</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Guangzhou, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form" method="GET" action="https://www.baidu.com/s?">
+	<div class="input-group">
+    	<input name="wd" type="text" class="form-control search-form-input" placeholder="搜索" />
+	    <span class="input-group-btn">
+	    	<button type="submit" class=" btn btn-flat search-form-submit"><i class="icon icon-search"></i></button>
+	    </span>
+    </div>
+</form>
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/kill8g" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/AI/">AI</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C/">C++</a><span class="category-list-count">6</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/C/http/">http</a><span class="category-list-count">1</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/C/http/lua/">lua</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/C/lua/">lua</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/LeetCode/">LeetCode</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">6</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/Android/">Android</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/OLLVM/">OLLVM</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/docker/">docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/lua/">lua</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/mongo/">mongo</a><span class="category-list-count">3</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/mongo/python/">python</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/redis/">redis</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/server/">server</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%85%B6%E4%BB%96/">其他</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C++</a><span class="tag-list-count">24</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-C/" rel="tag">C/C++</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GDB/" rel="tag">GDB</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OLLVM/" rel="tag">OLLVM</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/StableDiffusion/" rel="tag">StableDiffusion</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/http/" rel="tag">http</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/lua/" rel="tag">lua</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongo/" rel="tag">mongo</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/" rel="tag">python</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/" rel="tag">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/server/" rel="tag">server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/shell/" rel="tag">shell</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%85%B6%E4%BB%96/" rel="tag">其他</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/C/" style="font-size: 13px;">C</a> <a href="/tags/C/" style="font-size: 14px;">C++</a> <a href="/tags/C-C/" style="font-size: 13px;">C/C++</a> <a href="/tags/GDB/" style="font-size: 13px;">GDB</a> <a href="/tags/Linux/" style="font-size: 13.5px;">Linux</a> <a href="/tags/OLLVM/" style="font-size: 13px;">OLLVM</a> <a href="/tags/StableDiffusion/" style="font-size: 13px;">StableDiffusion</a> <a href="/tags/docker/" style="font-size: 13px;">docker</a> <a href="/tags/http/" style="font-size: 13px;">http</a> <a href="/tags/lua/" style="font-size: 13.75px;">lua</a> <a href="/tags/mongo/" style="font-size: 13.5px;">mongo</a> <a href="/tags/python/" style="font-size: 13.25px;">python</a> <a href="/tags/redis/" style="font-size: 13px;">redis</a> <a href="/tags/server/" style="font-size: 13px;">server</a> <a href="/tags/shell/" style="font-size: 13px;">shell</a> <a href="/tags/%E5%85%B6%E4%BB%96/" style="font-size: 13px;">其他</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/08/">八月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">七月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">六月 2023</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">五月 2023</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">四月 2023</a><span class="archive-list-count">16</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">三月 2023</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">二月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">一月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">十二月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">九月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/05/">五月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/02/">二月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/01/">一月 2022</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/08/02/excelop/" class="title">Excel数据导出工具</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-08-02T02:15:42.000Z" itemprop="datePublished">2023-08-02</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/LeetCode/">LeetCode</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/07/11/four-number/" class="title">算法 18. 四数之和</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-07-11T02:12:14.000Z" itemprop="datePublished">2023-07-11</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/LeetCode/">LeetCode</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/06/12/phone-number/" class="title">算法 17. 电话号码的字母组合</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-06-12T02:08:50.000Z" itemprop="datePublished">2023-06-12</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/C/">C++</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/06/07/aoi/" class="title">游戏服务器AOI算法-九宫格</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-06-07T10:45:13.000Z" itemprop="datePublished">2023-06-07</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/C/">C++</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/06/02/memory-pool/" class="title">一种特定环境使用的简易内存池</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-06-02T03:08:24.000Z" itemprop="datePublished">2023-06-02</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-parse-json" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      使用C++解析json字符串
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2023/05/15/parse-json/" class="article-date">
+	  <time datetime="2023-05-15T09:50:37.000Z" itemprop="datePublished">2023-05-15</time>
+	</a>
+</span>
+        
+        
+
+        
+
+	<span class="article-read hidden-xs">
+    	<i class="icon icon-eye-fill" aria-hidden="true"></i>
+    	<span id="/2023/05/15/parse-json/" class="leancloud_visitors"  data-flag-title="使用C++解析json字符串">0</span>
+    </span>
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2023/05/15/parse-json/#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 1.7k(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 8(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <h5 id="使用C-解析json字符串"><a href="#使用C-解析json字符串" class="headerlink" title="使用C++解析json字符串"></a>使用C++解析json字符串</h5><h1 id="项目github地址"><a href="#项目github地址" class="headerlink" title="项目github地址"></a><a target="_blank" rel="noopener" href="https://github.com/kill8g/lua-tablelib">项目github地址</a></h1><h1 id="解析思路"><a href="#解析思路" class="headerlink" title="解析思路"></a>解析思路</h1><ul>
+<li>定义枚举类型, 包括 <code>null</code>, <code>bool</code>, <code>float</code>, <code>int</code>, <code>string</code>, <code>array</code>, <code>object</code></li>
+<li>顺序遍历字符串, 跳过所有的空白字段, 并根据遇到的第一个有效字符尝试各种解析方案</li>
+<li>当字符为<code>n</code>时, 尝试解析为<code>null</code></li>
+<li>当字符为<code>t</code>或<code>f</code>时, 尝试解析为<code>bool</code>值</li>
+<li>当字符为<code>-</code>或者数字时, 尝试解析为数值</li>
+<li>当字符为<code>&quot;</code>时, 尝试解析为字符串</li>
+<li>当字符为<code>[</code>时, 尝试解析为数组</li>
+<li>当字符为<code>&#123;</code>时, 尝试解析为对象</li>
+<li>当做完一次完整的解析后, 重复这一步骤即可</li>
+</ul>
+<h1 id="定义数据结构"><a href="#定义数据结构" class="headerlink" title="定义数据结构"></a>定义数据结构</h1><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum class</span> <span class="title class_">json_type</span> &#123;</span><br><span class="line">    JSON_NULL,</span><br><span class="line">    JSON_BOOL,</span><br><span class="line">    JSON_NUMBER,</span><br><span class="line">    JSON_INT,</span><br><span class="line">    JSON_STRING,</span><br><span class="line">    JSON_ARRAY,</span><br><span class="line">    JSON_OBJECT</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">json_value</span> &#123;</span><br><span class="line">    json_type type;</span><br><span class="line">    <span class="keyword">union</span> &#123;</span><br><span class="line">        <span class="type">bool</span> b;</span><br><span class="line">        <span class="type">double</span> n;</span><br><span class="line">        <span class="type">long</span> <span class="type">long</span> i;</span><br><span class="line">        string* s;</span><br><span class="line">        vector&lt;json_value*&gt;* a;</span><br><span class="line">        map&lt;string, json_value*&gt;* o;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h1 id="判断类型"><a href="#判断类型" class="headerlink" title="判断类型"></a>判断类型</h1><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 辅助函数 判断空格</span></span><br><span class="line"><span class="function"><span class="type">bool</span> <span class="title">is_space</span><span class="params">(<span class="type">char</span> c)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> c == <span class="string">&#x27; &#x27;</span> || c == <span class="string">&#x27;\t&#x27;</span> || c == <span class="string">&#x27;\n&#x27;</span> || c == <span class="string">&#x27;\r&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 辅助函数 跳过空格字符</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">skip_space</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">while</span> (pos &lt; len &amp;&amp; <span class="built_in">is_space</span>(input[pos])) pos++;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 辅助函数 判断是否数字</span></span><br><span class="line"><span class="function"><span class="type">bool</span> <span class="title">is_digit</span><span class="params">(<span class="type">char</span> c)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> c &gt;= <span class="string">&#x27;0&#x27;</span> &amp;&amp; c &lt;= <span class="string">&#x27;9&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 辅助函数 判断是否英文字母</span></span><br><span class="line"><span class="function"><span class="type">bool</span> <span class="title">is_alpha</span><span class="params">(<span class="type">char</span> c)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (c &gt;= <span class="string">&#x27;a&#x27;</span> &amp;&amp; c &lt;= <span class="string">&#x27;z&#x27;</span>) || (c &gt;= <span class="string">&#x27;A&#x27;</span> &amp;&amp; c &lt;= <span class="string">&#x27;Z&#x27;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="尝试解析"><a href="#尝试解析" class="headerlink" title="尝试解析"></a>尝试解析</h1><p>首字母为<strong>n</strong>, 尝试解析为<code>null</code><br>根据首字母的类型, 尝试不同的解析方案</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 尝试解析为null</span></span><br><span class="line"><span class="function">json_value* <span class="title">parse_null</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (pos + <span class="number">3</span> &lt; len &amp;&amp; input[pos] == <span class="string">&#x27;n&#x27;</span> &amp;&amp; input[pos + <span class="number">1</span>] == <span class="string">&#x27;u&#x27;</span> &amp;&amp; input[pos + <span class="number">2</span>] == <span class="string">&#x27;l&#x27;</span> &amp;&amp; input[pos + <span class="number">3</span>] == <span class="string">&#x27;l&#x27;</span>) &#123;</span><br><span class="line">        pos += <span class="number">4</span>;</span><br><span class="line">        json_value* v = <span class="keyword">new</span> <span class="built_in">json_value</span>();</span><br><span class="line">        v-&gt;type = json_type::JSON_NULL;</span><br><span class="line">        <span class="keyword">return</span> v;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 尝试解析为bool</span></span><br><span class="line"><span class="function">json_value* <span class="title">parse_bool</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (pos + <span class="number">3</span> &lt; len &amp;&amp; input[pos] == <span class="string">&#x27;t&#x27;</span> &amp;&amp; input[pos + <span class="number">1</span>] == <span class="string">&#x27;r&#x27;</span> &amp;&amp; input[pos + <span class="number">2</span>] == <span class="string">&#x27;u&#x27;</span> &amp;&amp; input[pos + <span class="number">3</span>] == <span class="string">&#x27;e&#x27;</span>) &#123;</span><br><span class="line">        pos += <span class="number">4</span>;</span><br><span class="line">        json_value* v = <span class="keyword">new</span> <span class="built_in">json_value</span>();</span><br><span class="line">        v-&gt;type = json_type::JSON_BOOL;</span><br><span class="line">        v-&gt;b = <span class="literal">true</span>;</span><br><span class="line">        <span class="keyword">return</span> v;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (pos + <span class="number">4</span> &lt; len &amp;&amp; input[pos] == <span class="string">&#x27;f&#x27;</span> &amp;&amp; input[pos + <span class="number">1</span>] == <span class="string">&#x27;a&#x27;</span> &amp;&amp; input[pos + <span class="number">2</span>] == <span class="string">&#x27;l&#x27;</span> &amp;&amp; input[pos + <span class="number">3</span>] == <span class="string">&#x27;s&#x27;</span> &amp;&amp; input[pos + <span class="number">4</span>] == <span class="string">&#x27;e&#x27;</span>) &#123;</span><br><span class="line">        pos += <span class="number">5</span>;</span><br><span class="line">        json_value* v = <span class="keyword">new</span> <span class="built_in">json_value</span>();</span><br><span class="line">        v-&gt;type = json_type::JSON_BOOL;</span><br><span class="line">        v-&gt;b = <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">return</span> v;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 尝试解析数值</span></span><br><span class="line"><span class="function">json_value* <span class="title">parse_number</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="type">int</span> start = pos; <span class="comment">// 记录数字的起始位置</span></span><br><span class="line">    <span class="type">bool</span> is_float = <span class="literal">false</span>; <span class="comment">// 记录数字是否是浮点数</span></span><br><span class="line">    <span class="keyword">if</span> (input[pos] == <span class="string">&#x27;-&#x27;</span>) <span class="comment">// 跳过负号</span></span><br><span class="line">        pos++;</span><br><span class="line">    <span class="keyword">if</span> (input[pos] == <span class="string">&#x27;0&#x27;</span>) <span class="comment">// 跳过零</span></span><br><span class="line">        pos++;</span><br><span class="line">    <span class="keyword">else</span> &#123; <span class="comment">// 跳过非零的整数部分</span></span><br><span class="line">        <span class="keyword">while</span> (pos &lt; len &amp;&amp; <span class="built_in">is_digit</span>(input[pos]))</span><br><span class="line">            pos++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (pos &lt; len &amp;&amp; input[pos] == <span class="string">&#x27;.&#x27;</span>) &#123; <span class="comment">// 跳过小数点和小数部分</span></span><br><span class="line">        is_float = <span class="literal">true</span>;</span><br><span class="line">        pos++;</span><br><span class="line">        <span class="keyword">while</span> (pos &lt; len &amp;&amp; <span class="built_in">is_digit</span>(input[pos]))</span><br><span class="line">            pos++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (pos &lt; len &amp;&amp; (input[pos] == <span class="string">&#x27;e&#x27;</span> || input[pos] == <span class="string">&#x27;E&#x27;</span>)) &#123; <span class="comment">// 跳过指数部分</span></span><br><span class="line">        is_float = <span class="literal">true</span>;</span><br><span class="line">        pos++;</span><br><span class="line">        <span class="keyword">if</span> (pos &lt; len &amp;&amp; (input[pos] == <span class="string">&#x27;+&#x27;</span> || input[pos] == <span class="string">&#x27;-&#x27;</span>)) <span class="comment">// 跳过指数符号</span></span><br><span class="line">            pos++;</span><br><span class="line">        <span class="keyword">while</span> (pos &lt; len &amp;&amp; <span class="built_in">is_digit</span>(input[pos])) <span class="comment">// 跳</span></span><br><span class="line">            pos++;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (pos &gt; start) &#123; <span class="comment">// 如果解析到了一个数字</span></span><br><span class="line">        json_value* v = <span class="keyword">new</span> <span class="built_in">json_value</span>();</span><br><span class="line">        <span class="function">string <span class="title">num_str</span><span class="params">(input + start, pos - start)</span></span>; <span class="comment">// 截取数字字符串</span></span><br><span class="line">        <span class="keyword">if</span> (is_float) &#123; <span class="comment">// 如果是浮点数，转换为double</span></span><br><span class="line">            v-&gt;type = json_type::JSON_NUMBER;</span><br><span class="line">            v-&gt;n = <span class="built_in">stod</span>(num_str);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span> &#123; <span class="comment">// 如果是整数，转换为int</span></span><br><span class="line">            v-&gt;type = json_type::JSON_INT;</span><br><span class="line">            v-&gt;i = <span class="built_in">stoll</span>(num_str);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> v;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 尝试解析字符串</span></span><br><span class="line"><span class="function">json_value* <span class="title">parse_string</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (input[pos] == <span class="string">&#x27;&quot;&#x27;</span>) &#123; <span class="comment">// 跳过双引号</span></span><br><span class="line">        pos++;</span><br><span class="line">        <span class="type">int</span> start = pos; <span class="comment">// 记录字符串的起始位置</span></span><br><span class="line">        <span class="keyword">while</span> (pos &lt; len &amp;&amp; input[pos] != <span class="string">&#x27;&quot;&#x27;</span>) <span class="comment">// 跳过字符串内容，暂不处理转义字符</span></span><br><span class="line">            pos++;</span><br><span class="line">        <span class="keyword">if</span> (pos &lt; len &amp;&amp; input[pos] == <span class="string">&#x27;&quot;&#x27;</span>) &#123; <span class="comment">// 跳过双引号</span></span><br><span class="line">            pos++;</span><br><span class="line">            json_value* v = <span class="keyword">new</span> <span class="built_in">json_value</span>();</span><br><span class="line">            v-&gt;type = json_type::JSON_STRING;</span><br><span class="line">            v-&gt;s = <span class="keyword">new</span> <span class="built_in">string</span>(input + start, pos - start - <span class="number">1</span>); <span class="comment">// 截取字符串内容</span></span><br><span class="line">            <span class="keyword">return</span> v;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 解析数组</span></span><br><span class="line"><span class="function">json_value* <span class="title">parse_array</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (input[pos] == <span class="string">&#x27;[&#x27;</span>) &#123; <span class="comment">// 跳过左中括号</span></span><br><span class="line">        pos++;</span><br><span class="line">        <span class="built_in">skip_space</span>(); <span class="comment">// 跳过空白字符</span></span><br><span class="line">        json_value* v = <span class="keyword">new</span> <span class="built_in">json_value</span>();</span><br><span class="line">        v-&gt;type = json_type::JSON_ARRAY;</span><br><span class="line">        v-&gt;a = <span class="keyword">new</span> <span class="built_in">vector</span>&lt;json_value*&gt;();</span><br><span class="line">        <span class="keyword">if</span> (input[pos] == <span class="string">&#x27;]&#x27;</span>) &#123; <span class="comment">// 处理空数组的情况</span></span><br><span class="line">            pos++;</span><br><span class="line">            <span class="keyword">return</span> v;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">while</span> (<span class="literal">true</span>) &#123; <span class="comment">// 循环解析数组元素</span></span><br><span class="line">            json_value* elem = <span class="built_in">parse_value</span>(); <span class="comment">// 解析一个元素值</span></span><br><span class="line">            <span class="keyword">if</span> (elem) &#123; <span class="comment">// 如果解析成功，将元素添加到数组中</span></span><br><span class="line">                v-&gt;a-&gt;<span class="built_in">push_back</span>(elem);</span><br><span class="line">                <span class="built_in">skip_space</span>(); <span class="comment">// 跳过空白字符</span></span><br><span class="line">                <span class="keyword">if</span> (input[pos] == <span class="string">&#x27;,&#x27;</span>) &#123; <span class="comment">// 如果遇到逗号，跳过并继续解析下一个元素</span></span><br><span class="line">                    pos++;</span><br><span class="line">                    <span class="built_in">skip_space</span>();</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">else</span> <span class="keyword">if</span> (input[pos] == <span class="string">&#x27;]&#x27;</span>) &#123; <span class="comment">// 如果遇到右中括号，结束解析并返回数组值</span></span><br><span class="line">                    pos++;</span><br><span class="line">                    <span class="keyword">return</span> v;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">else</span> &#123; <span class="comment">// 如果遇到其他字符，说明格式错误，返回空指针并释放内存</span></span><br><span class="line">                    <span class="keyword">delete</span> v;</span><br><span class="line">                    <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> &#123; <span class="comment">// 如果解析失败，返回空指针并释放内存</span></span><br><span class="line">                <span class="keyword">delete</span> v;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 尝试解析object</span></span><br><span class="line"><span class="function">json_value* <span class="title">parse_object</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (input[pos] == <span class="string">&#x27;&#123;&#x27;</span>) &#123; <span class="comment">// 跳过左大括号</span></span><br><span class="line">        pos++;</span><br><span class="line">        <span class="built_in">skip_space</span>(); <span class="comment">// 跳过空白字符</span></span><br><span class="line">        json_value* v = <span class="keyword">new</span> <span class="built_in">json_value</span>();</span><br><span class="line">        v-&gt;type = json_type::JSON_OBJECT;</span><br><span class="line">        v-&gt;o = <span class="keyword">new</span> <span class="built_in">map</span>&lt;string, json_value*&gt;();</span><br><span class="line">        <span class="keyword">if</span> (input[pos] == <span class="string">&#x27;&#125;&#x27;</span>) &#123; <span class="comment">// 处理空对象的情况</span></span><br><span class="line">            pos++;</span><br><span class="line">            <span class="keyword">return</span> v;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">while</span> (<span class="literal">true</span>) &#123; <span class="comment">// 循环解析对象成员</span></span><br><span class="line">            json_value* key = <span class="built_in">parse_string</span>(); <span class="comment">// 解析一个键值，必须是字符串类型</span></span><br><span class="line">            <span class="keyword">if</span> (key) &#123; <span class="comment">// 如果解析成功，获取键值对应的字符串内容，并释放内存</span></span><br><span class="line">                string key_str = *(key-&gt;s);</span><br><span class="line">                <span class="keyword">delete</span> key;</span><br><span class="line">                <span class="built_in">skip_space</span>(); <span class="comment">// 跳过空白字符</span></span><br><span class="line">                <span class="keyword">if</span> (input[pos] == <span class="string">&#x27;:&#x27;</span>) &#123; <span class="comment">// 如果遇到冒号，跳过并继续解析值部分</span></span><br><span class="line">                    pos++;</span><br><span class="line">                    <span class="built_in">skip_space</span>();</span><br><span class="line">                    json_value* value = <span class="built_in">parse_value</span>();</span><br><span class="line">                    <span class="keyword">if</span> (value) &#123; <span class="comment">// 如果解析成功，将键值和值添加到对象中</span></span><br><span class="line">                        v-&gt;o-&gt;<span class="built_in">insert</span>(&#123; key_str, value &#125;);</span><br><span class="line">                        <span class="built_in">skip_space</span>(); <span class="comment">// 跳过空白字符</span></span><br><span class="line">                        <span class="keyword">if</span> (input[pos] == <span class="string">&#x27;,&#x27;</span>) &#123; <span class="comment">// 如果遇到逗号，跳过并继续解析下一个成员</span></span><br><span class="line">                            pos++;</span><br><span class="line">                            <span class="built_in">skip_space</span>();</span><br><span class="line">                        &#125;</span><br><span class="line">                        <span class="keyword">else</span> <span class="keyword">if</span> (input[pos] == <span class="string">&#x27;&#125;&#x27;</span>) &#123; <span class="comment">// 如果遇到右大括号，结束解析并返回对象值</span></span><br><span class="line">                            pos++;</span><br><span class="line">                            <span class="keyword">return</span> v;</span><br><span class="line">                        &#125;</span><br><span class="line">                        <span class="keyword">else</span> &#123; <span class="comment">// 如果遇到其他字符，说明格式错误，返回空指针并释放内存</span></span><br><span class="line">                            <span class="keyword">delete</span> v;</span><br><span class="line">                            <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="keyword">else</span> &#123; <span class="comment">// 如果解析失败，返回空指针并释放内存</span></span><br><span class="line">                        <span class="keyword">delete</span> v;</span><br><span class="line">                        <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">else</span> &#123; <span class="comment">// 如果遇到其他字符，说明格式错误，返回空指针并释放内存</span></span><br><span class="line">                    <span class="keyword">delete</span> v;</span><br><span class="line">                    <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> &#123; <span class="comment">// 如果解析失败，返回空指针并释放内存</span></span><br><span class="line">                <span class="keyword">delete</span> v;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="解析入口"><a href="#解析入口" class="headerlink" title="解析入口"></a>解析入口</h1><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">json_value* <span class="title">parse_value</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">skip_space</span>(); <span class="comment">// 跳过空白字符</span></span><br><span class="line">    <span class="keyword">if</span> (input[pos] == <span class="string">&#x27;n&#x27;</span>) <span class="comment">// 尝试解析null值</span></span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">parse_null</span>();</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (input[pos] == <span class="string">&#x27;t&#x27;</span> || input[pos] == <span class="string">&#x27;f&#x27;</span>) <span class="comment">// 尝试解析布尔值</span></span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">parse_bool</span>();</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (input[pos] == <span class="string">&#x27;-&#x27;</span> || <span class="built_in">is_digit</span>(input[pos])) <span class="comment">// 尝试解析数字值</span></span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">parse_number</span>();</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (input[pos] == <span class="string">&#x27;&quot;&#x27;</span>) <span class="comment">// 尝试解析字符串值</span></span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">parse_string</span>();</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (input[pos] == <span class="string">&#x27;[&#x27;</span>) <span class="comment">// 尝试解析数组值</span></span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">parse_array</span>();</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (input[pos] == <span class="string">&#x27;&#123;&#x27;</span>) <span class="comment">// 尝试解析对象值</span></span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">parse_object</span>();</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">nullptr</span>;<span class="comment">// 无法解析，返回空指针</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>解析出一个字段, 就创建一个<code>json_value</code>, 并将其关联到根节点中, 遍历根节点, 就能得到整个<code>json</code>的所有字段及其值</p>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://www.kill8g.com/2023/05/15/parse-json/" title="使用C++解析json字符串" target="_blank" rel="external">https://www.kill8g.com/2023/05/15/parse-json/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/kill8g" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/logo1.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/kill8g" target="_blank"><span class="text-dark">山中</span><small class="ml-1x">Developer</small></a></h3>
+        <div>游戏行业 后端developer</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+      <div id="vcomments"></div>
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2023/05/22/httpc/" title="libcurl+libevent封装httpclient"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2023/05/09/require/" title="lua require机制"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  <!-- Button trigger modal -->
+  <button type="button" class="btn btn-fancy btn-donate pop-onhover bg-gradient-warning" data-toggle="modal" data-target="#donateModal"><span>赏</span></button>
+  <!-- <div class="wave-icon wave-icon-danger btn-donate" data-toggle="modal" data-target="#donateModal">
+    <div class="wave-circle"><span class="icon"><i class="icon icon-bill"></i></span></div>
+  </div> -->
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+<!-- Modal -->
+<div class="modal modal-center modal-small modal-xs-full fade" id="donateModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content donate">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <div class="modal-body">
+        <div class="donate-box">
+          <div class="donate-head">
+            <p>感谢您的支持，我会继续努力的!</p>
+          </div>
+          <div class="tab-content">
+            <div role="tabpanel" class="tab-pane fade active in" id="alipay">
+              <div class="donate-payimg">
+                <img src="/images/donate/alipayimg.jpg" alt="扫码支持" title="扫一扫" />
+              </div>
+              <p class="text-muted mv">扫码打赏，你说多少就多少</p>
+              <p class="text-grey">打开支付宝扫一扫，即可进行扫码打赏哦</p>
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="wechatpay">
+              <div class="donate-payimg">
+                <img src="/images/donate/wechatpayimg.jpg" alt="扫码支持" title="扫一扫" />
+              </div>
+              <p class="text-muted mv">扫码打赏，你说多少就多少</p>
+              <p class="text-grey">打开微信扫一扫，即可进行扫码打赏哦</p>
+            </div>
+          </div>
+          <div class="donate-footer">
+            <ul class="nav nav-tabs nav-justified" role="tablist">
+              <li role="presentation" class="active">
+                <a href="#alipay" id="alipay-tab" role="tab" data-toggle="tab" aria-controls="alipay" aria-expanded="true"><i class="icon icon-alipay"></i> 支付宝</a>
+              </li>
+              <li role="presentation" class="">
+                <a href="#wechatpay" role="tab" id="wechatpay-tab" data-toggle="tab" aria-controls="wechatpay" aria-expanded="false"><i class="icon icon-wepay"></i> 微信支付</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/kill8g" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        &copy; 2023 John Doe
+        
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+
+    <script>
+(function ($) {
+    $('.search-form').on('submit', function (e) {
+        var keyword = $('.search-form-input[name="wd"]').val();
+        window.location = 'https://www.baidu.com/s?wd=site:www.kill8g.com ' + keyword;
+        return false;
+    });
+})(jQuery);
+</script>
+
+
+
+
+   
+
+
+
+
+   
+    
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/valine"></script>
+  <script type="text/javascript">
+  var GUEST = ['nick', 'mail', 'link'];
+  var meta = 'nick,mail,link';
+  meta = meta.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#vcomments',
+    verify: false,
+    notify: false,
+    appId: 'chpRJDWJKRNocLBljQezqwMi-gzGzoHsz',
+    appKey: '3bC8bWGlDrur1ab5V4SjDuQ5',
+    placeholder: 'Just go go',
+    avatar: 'mm',
+    meta: meta,
+    pageSize: '10' || 10,
+    visitor: true
+  });
+  </script>
+
+     
+
+
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>单线程lua程序如何检测死循环 | 山中</title>
+  <meta name="description" content="lua底层没有提供检查死循环的接口, 在不影响性能的情况下, 比较可行的方法是检测脚本执行时间, 超过一定的时限, 就认为存在死循环多线程下, 可以在其他线程中监测是否存在执行时间异常的脚本, 单线程下就会麻烦一点这里提供一种单线程下的死循环检查方法, 通过lua_sethook跟signal来解决死循环问题 12345678910111213141516171819202122232425262">
+<meta property="og:type" content="article">
+<meta property="og:title" content="单线程lua程序如何检测死循环">
+<meta property="og:url" content="https://www.kill8g.com/2023/03/08/%E5%8D%95%E7%BA%BF%E7%A8%8Blua%E7%A8%8B%E5%BA%8F%E5%A6%82%E4%BD%95%E6%A3%80%E6%B5%8B%E6%AD%BB%E5%BE%AA%E7%8E%AF/index.html">
+<meta property="og:site_name" content="山中">
+<meta property="og:description" content="lua底层没有提供检查死循环的接口, 在不影响性能的情况下, 比较可行的方法是检测脚本执行时间, 超过一定的时限, 就认为存在死循环多线程下, 可以在其他线程中监测是否存在执行时间异常的脚本, 单线程下就会麻烦一点这里提供一种单线程下的死循环检查方法, 通过lua_sethook跟signal来解决死循环问题 12345678910111213141516171819202122232425262">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-03-08T09:50:48.000Z">
+<meta property="article:modified_time" content="2023-03-13T01:05:48.094Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="lua">
+<meta name="twitter:card" content="summary">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://www.kill8g.com/2023/03/08/%E5%8D%95%E7%BA%BF%E7%A8%8Blua%E7%A8%8B%E5%BA%8F%E5%A6%82%E4%BD%95%E6%A3%80%E6%B5%8B%E6%AD%BB%E5%BE%AA%E7%8E%AF/index.html">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+
+<body class="main-center theme-black" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/kill8g" target="_blank">
+          <img class="img-circle img-rotate" src="/images/logo1.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">山中</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Developer</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Guangzhou, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form" method="GET" action="https://www.baidu.com/s?">
+	<div class="input-group">
+    	<input name="wd" type="text" class="form-control search-form-input" placeholder="搜索" />
+	    <span class="input-group-btn">
+	    	<button type="submit" class=" btn btn-flat search-form-submit"><i class="icon icon-search"></i></button>
+	    </span>
+    </div>
+</form>
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/kill8g" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/AI/">AI</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C/">C++</a><span class="category-list-count">6</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/C/http/">http</a><span class="category-list-count">1</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/C/http/lua/">lua</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/C/lua/">lua</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/LeetCode/">LeetCode</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">6</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/Android/">Android</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/OLLVM/">OLLVM</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/docker/">docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/lua/">lua</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/mongo/">mongo</a><span class="category-list-count">3</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/mongo/python/">python</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/redis/">redis</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/server/">server</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%85%B6%E4%BB%96/">其他</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C++</a><span class="tag-list-count">24</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-C/" rel="tag">C/C++</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GDB/" rel="tag">GDB</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OLLVM/" rel="tag">OLLVM</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/StableDiffusion/" rel="tag">StableDiffusion</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/http/" rel="tag">http</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/lua/" rel="tag">lua</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongo/" rel="tag">mongo</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/" rel="tag">python</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/" rel="tag">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/server/" rel="tag">server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/shell/" rel="tag">shell</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%85%B6%E4%BB%96/" rel="tag">其他</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/C/" style="font-size: 13px;">C</a> <a href="/tags/C/" style="font-size: 14px;">C++</a> <a href="/tags/C-C/" style="font-size: 13px;">C/C++</a> <a href="/tags/GDB/" style="font-size: 13px;">GDB</a> <a href="/tags/Linux/" style="font-size: 13.5px;">Linux</a> <a href="/tags/OLLVM/" style="font-size: 13px;">OLLVM</a> <a href="/tags/StableDiffusion/" style="font-size: 13px;">StableDiffusion</a> <a href="/tags/docker/" style="font-size: 13px;">docker</a> <a href="/tags/http/" style="font-size: 13px;">http</a> <a href="/tags/lua/" style="font-size: 13.75px;">lua</a> <a href="/tags/mongo/" style="font-size: 13.5px;">mongo</a> <a href="/tags/python/" style="font-size: 13.25px;">python</a> <a href="/tags/redis/" style="font-size: 13px;">redis</a> <a href="/tags/server/" style="font-size: 13px;">server</a> <a href="/tags/shell/" style="font-size: 13px;">shell</a> <a href="/tags/%E5%85%B6%E4%BB%96/" style="font-size: 13px;">其他</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/08/">八月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">七月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">六月 2023</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">五月 2023</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">四月 2023</a><span class="archive-list-count">16</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">三月 2023</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">二月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">一月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">十二月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">九月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/05/">五月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/02/">二月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/01/">一月 2022</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/08/02/excelop/" class="title">Excel数据导出工具</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-08-02T02:15:42.000Z" itemprop="datePublished">2023-08-02</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/LeetCode/">LeetCode</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/07/11/four-number/" class="title">算法 18. 四数之和</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-07-11T02:12:14.000Z" itemprop="datePublished">2023-07-11</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/LeetCode/">LeetCode</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/06/12/phone-number/" class="title">算法 17. 电话号码的字母组合</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-06-12T02:08:50.000Z" itemprop="datePublished">2023-06-12</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/C/">C++</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/06/07/aoi/" class="title">游戏服务器AOI算法-九宫格</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-06-07T10:45:13.000Z" itemprop="datePublished">2023-06-07</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/C/">C++</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/06/02/memory-pool/" class="title">一种特定环境使用的简易内存池</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-06-02T03:08:24.000Z" itemprop="datePublished">2023-06-02</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-单线程lua程序如何检测死循环" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      单线程lua程序如何检测死循环
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2023/03/08/%E5%8D%95%E7%BA%BF%E7%A8%8Blua%E7%A8%8B%E5%BA%8F%E5%A6%82%E4%BD%95%E6%A3%80%E6%B5%8B%E6%AD%BB%E5%BE%AA%E7%8E%AF/" class="article-date">
+	  <time datetime="2023-03-08T09:50:48.000Z" itemprop="datePublished">2023-03-08</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/lua/">lua</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/lua/" rel="tag">lua</a>
+  </span>
+
+
+        
+
+	<span class="article-read hidden-xs">
+    	<i class="icon icon-eye-fill" aria-hidden="true"></i>
+    	<span id="/2023/03/08/%E5%8D%95%E7%BA%BF%E7%A8%8Blua%E7%A8%8B%E5%BA%8F%E5%A6%82%E4%BD%95%E6%A3%80%E6%B5%8B%E6%AD%BB%E5%BE%AA%E7%8E%AF/" class="leancloud_visitors"  data-flag-title="单线程lua程序如何检测死循环">0</span>
+    </span>
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2023/03/08/%E5%8D%95%E7%BA%BF%E7%A8%8Blua%E7%A8%8B%E5%BA%8F%E5%A6%82%E4%BD%95%E6%A3%80%E6%B5%8B%E6%AD%BB%E5%BE%AA%E7%8E%AF/#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 393(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 1(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <p>lua底层没有提供检查死循环的接口, 在不影响性能的情况下, 比较可行的方法是检测脚本执行时间, 超过一定的时限, 就认为存在死循环<br>多线程下, 可以在其他线程中监测是否存在执行时间异常的脚本, 单线程下就会麻烦一点<br>这里提供一种单线程下的死循环检查方法, 通过<strong>lua_sethook</strong>跟<strong>signal</strong>来解决死循环问题</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">static</span> <span class="type">void</span> <span class="title">lstop</span> <span class="params">(lua_State * L, lua_Debug * ar)</span> </span>&#123;</span><br><span class="line">	(<span class="type">void</span>)ar;  <span class="comment">/* unused arg. */</span></span><br><span class="line">	<span class="built_in">lua_sethook</span>(L, <span class="literal">NULL</span>, <span class="number">0</span>, <span class="number">0</span>);  <span class="comment">/* reset hook */</span></span><br><span class="line">	<span class="comment">// 抛出一个错误</span></span><br><span class="line">	<span class="built_in">luaL_error</span>(L, <span class="string">&quot;There may be an endless loop !&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">static</span> <span class="type">void</span> <span class="title">laction</span> <span class="params">(<span class="type">int</span> i)</span> </span>&#123;</span><br><span class="line">	<span class="built_in">signal</span>(i, SIG_DFL); <span class="comment">/* if another SIGINT happens, terminate process */</span></span><br><span class="line">	<span class="comment">/*</span></span><br><span class="line"><span class="comment">	  设置钩子函数, 当调用一个函数时, 从一个函数中返回时, 执行指定数量的指令时</span></span><br><span class="line"><span class="comment">	  就会执行一次钩子函数 lstop</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="built_in">lua_sethook</span>(L, lstop, LUA_MASKCALL | LUA_MASKRET | LUA_MASKCOUNT, <span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">run</span><span class="params">(<span class="type">const</span> <span class="type">char</span> * path)</span> </span>&#123;</span><br><span class="line">	L = <span class="built_in">luaL_newstate</span>();</span><br><span class="line">	<span class="built_in">luaL_openlibs</span>(L);</span><br><span class="line">	<span class="built_in">luaL_checkversion</span>(L);</span><br><span class="line"></span><br><span class="line">	<span class="type">int</span> result = <span class="built_in">luaL_loadfile</span>(L, path);</span><br><span class="line">	<span class="keyword">if</span> (result != <span class="number">0</span>) &#123;</span><br><span class="line">		<span class="type">const</span> <span class="type">char</span> * error = <span class="built_in">lua_tostring</span>(L, <span class="number">-1</span>);</span><br><span class="line">		_EXIT_(<span class="string">&quot;Load lua file [%s] failed, error : %s\n&quot;</span>, path, error);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="built_in">alarm</span>(<span class="number">5</span>); <span class="comment">/*设置闹钟 一个进程只能有一个闹钟时间*/</span></span><br><span class="line">	<span class="built_in">signal</span>(SIGALRM, laction); <span class="comment">/*闹钟触发后, 调用laction*/</span></span><br><span class="line">	result = <span class="built_in">lua_pcall</span>(L, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">	<span class="built_in">alarm</span>(<span class="number">0</span>); <span class="comment">/*取消闹钟*/</span></span><br><span class="line">	<span class="built_in">signal</span>(SIGALRM, SIG_DFL); <span class="comment">/*SIGALRM恢复为默认信号处理程序*/</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (result != <span class="number">0</span>) &#123;</span><br><span class="line">		<span class="type">const</span> <span class="type">char</span> * error = <span class="built_in">lua_tostring</span>(L, <span class="number">-1</span>);</span><br><span class="line">		_EXIT_(<span class="string">&quot;Call lua failed, error : %s\n&quot;</span>, error);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	_EXIT_(<span class="string">&quot;Exit the lua VM\n&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="keyword">local</span> loop = <span class="literal">true</span></span><br><span class="line">	<span class="keyword">while</span> loop <span class="keyword">do</span></span><br><span class="line">	<span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line">main()</span><br></pre></td></tr></table></figure>
+<p>启动测试, 5s后可以看到死循环被中断了</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Call lua failed, error : script.lua:6: There may be an endless loop !</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://www.kill8g.com/2023/03/08/%E5%8D%95%E7%BA%BF%E7%A8%8Blua%E7%A8%8B%E5%BA%8F%E5%A6%82%E4%BD%95%E6%A3%80%E6%B5%8B%E6%AD%BB%E5%BE%AA%E7%8E%AF/" title="单线程lua程序如何检测死循环" target="_blank" rel="external">https://www.kill8g.com/2023/03/08/单线程lua程序如何检测死循环/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/kill8g" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/logo1.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/kill8g" target="_blank"><span class="text-dark">山中</span><small class="ml-1x">Developer</small></a></h3>
+        <div>游戏行业 后端developer</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+      <div id="vcomments"></div>
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2023/03/14/%E5%AF%BB%E6%89%BE%E4%B8%A4%E4%B8%AA%E6%AD%A3%E5%BA%8F%E6%95%B0%E7%BB%84%E7%9A%84%E4%B8%AD%E4%BD%8D%E6%95%B0/" title="算法 4. 寻找两个正序数组的中位数"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2023/03/07/linux%E4%B8%8BC%E7%A8%8B%E5%BA%8FCPU%E5%8D%A0%E7%94%A8%E7%8E%87%E5%A4%AA%E9%AB%98%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5/" title="linux下C程序CPU占用率太高问题排查"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  <!-- Button trigger modal -->
+  <button type="button" class="btn btn-fancy btn-donate pop-onhover bg-gradient-warning" data-toggle="modal" data-target="#donateModal"><span>赏</span></button>
+  <!-- <div class="wave-icon wave-icon-danger btn-donate" data-toggle="modal" data-target="#donateModal">
+    <div class="wave-circle"><span class="icon"><i class="icon icon-bill"></i></span></div>
+  </div> -->
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+<!-- Modal -->
+<div class="modal modal-center modal-small modal-xs-full fade" id="donateModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content donate">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <div class="modal-body">
+        <div class="donate-box">
+          <div class="donate-head">
+            <p>感谢您的支持，我会继续努力的!</p>
+          </div>
+          <div class="tab-content">
+            <div role="tabpanel" class="tab-pane fade active in" id="alipay">
+              <div class="donate-payimg">
+                <img src="/images/donate/alipayimg.jpg" alt="扫码支持" title="扫一扫" />
+              </div>
+              <p class="text-muted mv">扫码打赏，你说多少就多少</p>
+              <p class="text-grey">打开支付宝扫一扫，即可进行扫码打赏哦</p>
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="wechatpay">
+              <div class="donate-payimg">
+                <img src="/images/donate/wechatpayimg.jpg" alt="扫码支持" title="扫一扫" />
+              </div>
+              <p class="text-muted mv">扫码打赏，你说多少就多少</p>
+              <p class="text-grey">打开微信扫一扫，即可进行扫码打赏哦</p>
+            </div>
+          </div>
+          <div class="donate-footer">
+            <ul class="nav nav-tabs nav-justified" role="tablist">
+              <li role="presentation" class="active">
+                <a href="#alipay" id="alipay-tab" role="tab" data-toggle="tab" aria-controls="alipay" aria-expanded="true"><i class="icon icon-alipay"></i> 支付宝</a>
+              </li>
+              <li role="presentation" class="">
+                <a href="#wechatpay" role="tab" id="wechatpay-tab" data-toggle="tab" aria-controls="wechatpay" aria-expanded="false"><i class="icon icon-wepay"></i> 微信支付</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/kill8g" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        &copy; 2023 John Doe
+        
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+
+    <script>
+(function ($) {
+    $('.search-form').on('submit', function (e) {
+        var keyword = $('.search-form-input[name="wd"]').val();
+        window.location = 'https://www.baidu.com/s?wd=site:www.kill8g.com ' + keyword;
+        return false;
+    });
+})(jQuery);
+</script>
+
+
+
+
+   
+
+
+
+
+   
+    
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/valine"></script>
+  <script type="text/javascript">
+  var GUEST = ['nick', 'mail', 'link'];
+  var meta = 'nick,mail,link';
+  meta = meta.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#vcomments',
+    verify: false,
+    notify: false,
+    appId: 'chpRJDWJKRNocLBljQezqwMi-gzGzoHsz',
+    appKey: '3bC8bWGlDrur1ab5V4SjDuQ5',
+    placeholder: 'Just go go',
+    avatar: 'mm',
+    meta: meta,
+    pageSize: '10' || 10,
+    visitor: true
+  });
+  </script>
+
+     
+
+
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang=zh>
+<head>
+  <meta charset="utf-8">
+  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="Cache-Control" content="no-transform" />
+  <meta http-equiv="Cache-Control" content="no-siteapp" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="format-detection" content="telephone=no,email=no,adress=no">
+  <!-- Color theme for statusbar -->
+  <meta name="theme-color" content="#000000" />
+  <!-- 强制页面在当前窗口以独立页面显示,防止别人在框架里调用页面 -->
+  <meta http-equiv="window-target" content="_top" />
+  
+  
+  <title>一种特定环境使用的简易内存池 | 山中</title>
+  <meta name="description" content="整个内存池代码就一百多行, 代码内容也非常简单, windows环境下, 消耗大约为malloc&#x2F;free的1&#x2F;15左右(未做严谨测试, 数据仅供参考) 项目github地址 为什么需要使用内存池 减少内存碎片 提高申请和释放内存的效率  功能需求 功能足够简单, 尽可能不使用第三方库 每次申请的内存都是固定大小, 随用随删 多线程环境下为每个线程绑定一个内存池, 避免使用锁  设计思路 提前申请">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一种特定环境使用的简易内存池">
+<meta property="og:url" content="https://www.kill8g.com/2023/06/02/memory-pool/index.html">
+<meta property="og:site_name" content="山中">
+<meta property="og:description" content="整个内存池代码就一百多行, 代码内容也非常简单, windows环境下, 消耗大约为malloc&#x2F;free的1&#x2F;15左右(未做严谨测试, 数据仅供参考) 项目github地址 为什么需要使用内存池 减少内存碎片 提高申请和释放内存的效率  功能需求 功能足够简单, 尽可能不使用第三方库 每次申请的内存都是固定大小, 随用随删 多线程环境下为每个线程绑定一个内存池, 避免使用锁  设计思路 提前申请">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-06-02T03:08:24.000Z">
+<meta property="article:modified_time" content="2023-06-02T06:08:41.400Z">
+<meta property="article:author" content="John Doe">
+<meta property="article:tag" content="C++">
+<meta name="twitter:card" content="summary">
+  <!-- Canonical links -->
+  <link rel="canonical" href="https://www.kill8g.com/2023/06/02/memory-pool/index.html">
+  
+  
+    <link rel="icon" href="/favicon.png" type="image/x-icon">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+  
+  
+<meta name="generator" content="Hexo 5.4.2"></head>
+
+
+<body class="main-center theme-black" itemscope itemtype="http://schema.org/WebPage">
+  <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+  <div class="slimContent">
+    <div class="navbar-header">
+      
+      
+      <div class="profile-block text-center">
+        <a id="avatar" href="https://github.com/kill8g" target="_blank">
+          <img class="img-circle img-rotate" src="/images/logo1.jpg" width="200" height="200">
+        </a>
+        <h2 id="name" class="hidden-xs hidden-sm">山中</h2>
+        <h3 id="title" class="hidden-xs hidden-sm hidden-md">Developer</h3>
+        <small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Guangzhou, China</small>
+      </div>
+      
+      <div class="search" id="search-form-wrap">
+
+    <form class="search-form sidebar-form" method="GET" action="https://www.baidu.com/s?">
+	<div class="input-group">
+    	<input name="wd" type="text" class="form-control search-form-input" placeholder="搜索" />
+	    <span class="input-group-btn">
+	    	<button type="submit" class=" btn btn-flat search-form-submit"><i class="icon icon-search"></i></button>
+	    </span>
+    </div>
+</form>
+
+</div>
+      <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation">
+      <ul class="nav navbar-nav main-nav ">
+        
+        
+        <li class="menu-item menu-item-home">
+          <a href="/.">
+            
+            <i class="icon icon-home-fill"></i>
+            
+            <span class="menu-title">首页</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives">
+            
+            <i class="icon icon-archives-fill"></i>
+            
+            <span class="menu-title">归档</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories">
+            
+            <i class="icon icon-folder"></i>
+            
+            <span class="menu-title">分类</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags">
+            
+            <i class="icon icon-tags"></i>
+            
+            <span class="menu-title">标签</span>
+          </a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about">
+            
+            <i class="icon icon-cup-fill"></i>
+            
+            <span class="menu-title">关于</span>
+          </a>
+        </li>
+        
+      </ul>
+      
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/kill8g" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    </nav>
+  </div>
+</header>
+
+  
+    <aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar">
+  <div class="slimContent">
+    
+      <div class="widget">
+    <h3 class="widget-title">公告</h3>
+    <div class="widget-body">
+        <div id="board">
+            <div class="content">
+                <p>欢迎交流与分享经验!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">分类</h3>
+    <div class="widget-body">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/AI/">AI</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/C/">C++</a><span class="category-list-count">6</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/C/http/">http</a><span class="category-list-count">1</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/C/http/lua/">lua</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/C/lua/">lua</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/LeetCode/">LeetCode</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">6</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/Android/">Android</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/OLLVM/">OLLVM</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/docker/">docker</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/lua/">lua</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/mongo/">mongo</a><span class="category-list-count">3</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/mongo/python/">python</a><span class="category-list-count">1</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/redis/">redis</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/server/">server</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%85%B6%E4%BB%96/">其他</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签</h3>
+    <div class="widget-body">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/" rel="tag">C++</a><span class="tag-list-count">24</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-C/" rel="tag">C/C++</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GDB/" rel="tag">GDB</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OLLVM/" rel="tag">OLLVM</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/StableDiffusion/" rel="tag">StableDiffusion</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/" rel="tag">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/http/" rel="tag">http</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/lua/" rel="tag">lua</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongo/" rel="tag">mongo</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/" rel="tag">python</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/" rel="tag">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/server/" rel="tag">server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/shell/" rel="tag">shell</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%85%B6%E4%BB%96/" rel="tag">其他</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">标签云</h3>
+    <div class="widget-body tagcloud">
+      <a href="/tags/C/" style="font-size: 13px;">C</a> <a href="/tags/C/" style="font-size: 14px;">C++</a> <a href="/tags/C-C/" style="font-size: 13px;">C/C++</a> <a href="/tags/GDB/" style="font-size: 13px;">GDB</a> <a href="/tags/Linux/" style="font-size: 13.5px;">Linux</a> <a href="/tags/OLLVM/" style="font-size: 13px;">OLLVM</a> <a href="/tags/StableDiffusion/" style="font-size: 13px;">StableDiffusion</a> <a href="/tags/docker/" style="font-size: 13px;">docker</a> <a href="/tags/http/" style="font-size: 13px;">http</a> <a href="/tags/lua/" style="font-size: 13.75px;">lua</a> <a href="/tags/mongo/" style="font-size: 13.5px;">mongo</a> <a href="/tags/python/" style="font-size: 13.25px;">python</a> <a href="/tags/redis/" style="font-size: 13px;">redis</a> <a href="/tags/server/" style="font-size: 13px;">server</a> <a href="/tags/shell/" style="font-size: 13px;">shell</a> <a href="/tags/%E5%85%B6%E4%BB%96/" style="font-size: 13px;">其他</a>
+    </div>
+  </div>
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">归档</h3>
+    <div class="widget-body">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/08/">八月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">七月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">六月 2023</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">五月 2023</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">四月 2023</a><span class="archive-list-count">16</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">三月 2023</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">二月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">一月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">十二月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">九月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/05/">五月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/02/">二月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/01/">一月 2022</a><span class="archive-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget">
+    <h3 class="widget-title">最新文章</h3>
+    <div class="widget-body">
+      <ul class="recent-post-list list-unstyled no-thumbnail">
+        
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                
+              </p>
+              <p class="item-title">
+                <a href="/2023/08/02/excelop/" class="title">Excel数据导出工具</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-08-02T02:15:42.000Z" itemprop="datePublished">2023-08-02</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/LeetCode/">LeetCode</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/07/11/four-number/" class="title">算法 18. 四数之和</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-07-11T02:12:14.000Z" itemprop="datePublished">2023-07-11</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/LeetCode/">LeetCode</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/06/12/phone-number/" class="title">算法 17. 电话号码的字母组合</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-06-12T02:08:50.000Z" itemprop="datePublished">2023-06-12</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/C/">C++</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/06/07/aoi/" class="title">游戏服务器AOI算法-九宫格</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-06-07T10:45:13.000Z" itemprop="datePublished">2023-06-07</time>
+              </p>
+            </div>
+          </li>
+          
+          <li>
+            
+            <div class="item-inner">
+              <p class="item-category">
+                <a class="category-link" href="/categories/C/">C++</a>
+              </p>
+              <p class="item-title">
+                <a href="/2023/06/02/memory-pool/" class="title">一种特定环境使用的简易内存池</a>
+              </p>
+              <p class="item-date">
+                <time datetime="2023-06-02T03:08:24.000Z" itemprop="datePublished">2023-06-02</time>
+              </p>
+            </div>
+          </li>
+          
+      </ul>
+    </div>
+  </div>
+  
+
+    
+  </div>
+</aside>
+
+  
+  
+<main class="main" role="main">
+  <div class="content">
+  <article id="post-memory-pool" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
+    
+    <div class="article-header">
+      
+        
+  
+    <h1 class="article-title" itemprop="name">
+      一种特定环境使用的简易内存池
+    </h1>
+  
+
+      
+      <div class="article-meta">
+        <span class="article-date">
+    <i class="icon icon-calendar-check"></i>
+	<a href="/2023/06/02/memory-pool/" class="article-date">
+	  <time datetime="2023-06-02T03:08:24.000Z" itemprop="datePublished">2023-06-02</time>
+	</a>
+</span>
+        
+  <span class="article-category">
+    <i class="icon icon-folder"></i>
+    <a class="article-category-link" href="/categories/C/">C++</a>
+  </span>
+
+        
+  <span class="article-tag">
+    <i class="icon icon-tags"></i>
+	<a class="article-tag-link-link" href="/tags/C/" rel="tag">C++</a>
+  </span>
+
+
+        
+
+	<span class="article-read hidden-xs">
+    	<i class="icon icon-eye-fill" aria-hidden="true"></i>
+    	<span id="/2023/06/02/memory-pool/" class="leancloud_visitors"  data-flag-title="一种特定环境使用的简易内存池">0</span>
+    </span>
+
+        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2023/06/02/memory-pool/#comments" class="article-comment-link">评论</a></span>
+        
+	
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 841(字)</span>
+	
+	
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 4(分)</span>
+	
+
+      </div>
+    </div>
+    <div class="article-entry marked-body" itemprop="articleBody">
+      
+        <p>整个内存池代码就一百多行, 代码内容也非常简单, windows环境下, 消耗大约为<code>malloc/free</code>的<strong>1/15</strong>左右(未做严谨测试, 数据仅供参考)</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/kill8g/memory_pool">项目github地址</a></p>
+<h1 id="为什么需要使用内存池"><a href="#为什么需要使用内存池" class="headerlink" title="为什么需要使用内存池"></a>为什么需要使用内存池</h1><ul>
+<li>减少内存碎片</li>
+<li>提高申请和释放内存的效率</li>
+</ul>
+<h1 id="功能需求"><a href="#功能需求" class="headerlink" title="功能需求"></a>功能需求</h1><ul>
+<li>功能足够简单, 尽可能不使用第三方库</li>
+<li>每次申请的内存都是固定大小, 随用随删</li>
+<li>多线程环境下为每个线程绑定一个内存池, 避免使用锁</li>
+</ul>
+<h1 id="设计思路"><a href="#设计思路" class="headerlink" title="设计思路"></a>设计思路</h1><ul>
+<li>提前申请一大块内存, 划分为N份, bitset记录每一份内存有没有被使用</li>
+<li>移动offset检查可用的内存块, 循环重复这个过程</li>
+</ul>
+<h1 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h1><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> uint64 = <span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span>;</span><br><span class="line"><span class="meta">#<span class="keyword">define</span> bit_size 64</span></span><br><span class="line"><span class="comment">// 比使用std::bitset更快一点</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">bit</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="built_in">bit</span>(<span class="type">size_t</span> len) &#123;</span><br><span class="line">		<span class="keyword">this</span>-&gt;_len = len;</span><br><span class="line">		<span class="keyword">this</span>-&gt;_bitset.<span class="built_in">resize</span>(len / bit_size, <span class="number">0</span>);</span><br><span class="line">		<span class="keyword">if</span> (len % bit_size != <span class="number">0</span>) &#123;</span><br><span class="line">			<span class="keyword">this</span>-&gt;_bitset.<span class="built_in">push_back</span>(<span class="number">0</span>);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">bit</span>(<span class="type">const</span> bit&amp;) = <span class="keyword">delete</span>;</span><br><span class="line">	bit&amp; <span class="keyword">operator</span>=(<span class="type">const</span> bit&amp;) = <span class="keyword">delete</span>;</span><br><span class="line">	<span class="function"><span class="type">bool</span> <span class="title">get</span><span class="params">(<span class="type">size_t</span> offset)</span> </span>&#123;</span><br><span class="line">		<span class="built_in">assert</span>(offset &lt; <span class="keyword">this</span>-&gt;_len);</span><br><span class="line">		uint64 index = offset / bit_size;</span><br><span class="line">		uint64 mod = offset % bit_size;</span><br><span class="line">		uint64 mask = (uint64)<span class="number">1</span> &lt;&lt; mod;</span><br><span class="line">		uint64 result = <span class="keyword">this</span>-&gt;_bitset[index] &amp; mask;</span><br><span class="line">		<span class="keyword">return</span> result != <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="function"><span class="type">void</span> <span class="title">set</span><span class="params">(<span class="type">size_t</span> offset, <span class="type">bool</span> value)</span> </span>&#123;</span><br><span class="line">		<span class="built_in">assert</span>(offset &lt; <span class="keyword">this</span>-&gt;_len);</span><br><span class="line">		uint64 index = offset / bit_size;</span><br><span class="line">		uint64 mod = offset % bit_size;</span><br><span class="line">		<span class="keyword">if</span> (!value) &#123;</span><br><span class="line">			uint64 mask = ~(<span class="number">1</span> &lt;&lt; mod);</span><br><span class="line">			<span class="keyword">this</span>-&gt;_bitset[index] = <span class="keyword">this</span>-&gt;_bitset[index] &amp; mask;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">else</span> &#123;</span><br><span class="line">			uint64 mask = (uint64)<span class="number">1</span> &lt;&lt; mod;</span><br><span class="line">			<span class="keyword">this</span>-&gt;_bitset[index] = <span class="keyword">this</span>-&gt;_bitset[index] | mask;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	std::vector&lt;uint64&gt; _bitset;</span><br><span class="line">	<span class="type">size_t</span> _len;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="meta">#<span class="keyword">define</span> failed_skip 3</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">memory_wheel</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="built_in">memory_wheel</span>(<span class="type">size_t</span> class_sizeof, <span class="type">size_t</span> chunk_size) &#123;</span><br><span class="line">		<span class="keyword">this</span>-&gt;_chunk_size = chunk_size;</span><br><span class="line">		<span class="keyword">this</span>-&gt;_class_sizeof = class_sizeof;</span><br><span class="line">		<span class="keyword">this</span>-&gt;_offset = <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">this</span>-&gt;_failed = <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">this</span>-&gt;_using = <span class="keyword">new</span> <span class="built_in">bit</span>(chunk_size);</span><br><span class="line">		<span class="keyword">this</span>-&gt;_buffer = <span class="built_in">malloc</span>(chunk_size * class_sizeof);</span><br><span class="line">		<span class="keyword">this</span>-&gt;_start = (<span class="type">uintptr_t</span>)<span class="keyword">this</span>-&gt;_buffer;</span><br><span class="line">		<span class="keyword">this</span>-&gt;_over = <span class="keyword">this</span>-&gt;_start + chunk_size * class_sizeof;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	~<span class="built_in">memory_wheel</span>() &#123;</span><br><span class="line">		<span class="built_in">free</span>(<span class="keyword">this</span>-&gt;_buffer);</span><br><span class="line">		<span class="keyword">delete</span> <span class="keyword">this</span>-&gt;_using;</span><br><span class="line">		<span class="keyword">this</span>-&gt;_offset = <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">this</span>-&gt;_buffer = <span class="literal">nullptr</span>;</span><br><span class="line">		<span class="keyword">this</span>-&gt;_failed = <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="built_in">memory_wheel</span>(<span class="type">const</span> memory_wheel&amp;) = <span class="keyword">delete</span>;</span><br><span class="line">	memory_wheel&amp; <span class="keyword">operator</span>=(<span class="type">const</span> memory_wheel&amp;) = <span class="keyword">delete</span>;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="type">void</span>* <span class="title">palloc</span><span class="params">()</span> </span>&#123;</span><br><span class="line">		<span class="comment">// 一整块内存都被使用了, 回到起点</span></span><br><span class="line">		<span class="keyword">if</span> (<span class="keyword">this</span>-&gt;_offset &gt;= <span class="keyword">this</span>-&gt;_chunk_size) &#123;</span><br><span class="line">			<span class="keyword">this</span>-&gt;_offset = <span class="number">0</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">// 这一块内存是否被使用</span></span><br><span class="line">		<span class="keyword">if</span> (!<span class="keyword">this</span>-&gt;_using-&gt;<span class="built_in">get</span>(<span class="keyword">this</span>-&gt;_offset)) &#123;</span><br><span class="line">			<span class="comment">// 标记内存被占用</span></span><br><span class="line">			<span class="keyword">this</span>-&gt;_using-&gt;<span class="built_in">set</span>(<span class="keyword">this</span>-&gt;_offset, <span class="number">1</span>);</span><br><span class="line">			<span class="comment">// 分配一块_class_sizeof大小的内存</span></span><br><span class="line">			<span class="type">uintptr_t</span> addr = (<span class="type">uintptr_t</span>)<span class="keyword">this</span>-&gt;_buffer;</span><br><span class="line">			<span class="type">void</span>* p = (<span class="type">void</span>*)(addr + <span class="keyword">this</span>-&gt;_class_sizeof * <span class="keyword">this</span>-&gt;_offset++);</span><br><span class="line">			<span class="built_in">memset</span>(p, <span class="number">0</span>, <span class="keyword">this</span>-&gt;_class_sizeof);</span><br><span class="line">			<span class="keyword">return</span> p;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">// _offset所在的这一块内存被占用了很久都没有释放</span></span><br><span class="line">		<span class="keyword">if</span> (<span class="keyword">this</span>-&gt;_failed++ &gt;= failed_skip) &#123;</span><br><span class="line">			<span class="comment">// 跳过他</span></span><br><span class="line">			++<span class="keyword">this</span>-&gt;_offset;</span><br><span class="line">			<span class="comment">// 重置失败次数</span></span><br><span class="line">			<span class="keyword">this</span>-&gt;_failed = <span class="number">0</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="type">void</span>* p = <span class="built_in">malloc</span>(<span class="keyword">this</span>-&gt;_class_sizeof);</span><br><span class="line">		<span class="keyword">if</span> (!p)</span><br><span class="line">			<span class="keyword">return</span> <span class="literal">nullptr</span>;</span><br><span class="line">		<span class="built_in">memset</span>(p, <span class="number">0</span>, <span class="keyword">this</span>-&gt;_class_sizeof);</span><br><span class="line">		<span class="keyword">return</span> p;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="type">void</span> <span class="title">recycle</span><span class="params">(<span class="type">void</span>* p)</span> </span>&#123;</span><br><span class="line">		<span class="keyword">if</span> (!p)</span><br><span class="line">			<span class="keyword">return</span>;</span><br><span class="line">		<span class="type">uintptr_t</span> addr = (<span class="type">uintptr_t</span>)p;</span><br><span class="line">		<span class="keyword">if</span> (addr &gt;= <span class="keyword">this</span>-&gt;_start &amp;&amp; addr &lt;= (<span class="keyword">this</span>-&gt;_over - <span class="keyword">this</span>-&gt;_class_sizeof)) &#123;</span><br><span class="line">			<span class="keyword">auto</span> diff = addr - <span class="keyword">this</span>-&gt;_start;</span><br><span class="line">			<span class="keyword">auto</span> mod = diff % <span class="keyword">this</span>-&gt;_class_sizeof;</span><br><span class="line">			<span class="built_in">assert</span>(mod == <span class="number">0</span>);</span><br><span class="line">			<span class="type">size_t</span> offset = diff / <span class="keyword">this</span>-&gt;_class_sizeof;</span><br><span class="line">			<span class="keyword">this</span>-&gt;_using-&gt;<span class="built_in">set</span>(offset, <span class="number">0</span>);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">else</span> &#123;</span><br><span class="line">			<span class="built_in">free</span>(p);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	<span class="type">size_t</span> _class_sizeof;</span><br><span class="line">	<span class="type">size_t</span> _chunk_size;</span><br><span class="line">	<span class="type">size_t</span> _offset;</span><br><span class="line">	<span class="type">void</span>* _buffer;</span><br><span class="line">	<span class="type">int</span> _failed;</span><br><span class="line">	<span class="type">uintptr_t</span> _start;</span><br><span class="line">	<span class="type">uintptr_t</span> _over;</span><br><span class="line">	bit* _using;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h1 id="Usage"><a href="#Usage" class="headerlink" title="Usage"></a>Usage</h1><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">TestClass</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="built_in">TestClass</span>(<span class="type">int</span> v1, <span class="type">int</span> v2) &#123;</span><br><span class="line">		<span class="keyword">this</span>-&gt;v1 = v1;</span><br><span class="line">		<span class="keyword">this</span>-&gt;v2 = v2;</span><br><span class="line">		<span class="keyword">this</span>-&gt;v3 = <span class="number">0</span>;</span><br><span class="line">		<span class="keyword">this</span>-&gt;b = <span class="literal">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">TestClass</span>(<span class="type">int</span> v1, <span class="type">int</span> v2, <span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span> v3) &#123;</span><br><span class="line">		<span class="keyword">this</span>-&gt;v1 = v1;</span><br><span class="line">		<span class="keyword">this</span>-&gt;v2 = v2;</span><br><span class="line">		<span class="keyword">this</span>-&gt;v3 = v3;</span><br><span class="line">		<span class="keyword">this</span>-&gt;b = <span class="literal">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="type">bool</span> b;</span><br><span class="line">	<span class="type">int</span> v1;</span><br><span class="line">	<span class="type">int</span> v2;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">long</span> <span class="type">long</span> v3;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="meta">#<span class="keyword">define</span> PLACEMENT_NEW(ptr, _type, ...) new(ptr) _type &#123; __VA_ARGS__ &#125;</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> NEW(pool, _type, ...) PLACEMENT_NEW((pool)-&gt;palloc(), _type, __VA_ARGS__)</span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span>* argv[])</span> </span>&#123;</span><br><span class="line">	<span class="comment">// 预分配512*sizeof(TestClass)大小的内存</span></span><br><span class="line">	<span class="function">memory_wheel <span class="title">wheel</span><span class="params">(<span class="keyword">sizeof</span>(TestClass), <span class="number">512</span>)</span></span>;</span><br><span class="line">	<span class="comment">// new TestClass</span></span><br><span class="line">	TestClass* obj1 = <span class="built_in">NEW</span>(&amp;wheel, TestClass, <span class="number">1</span>, <span class="number">2</span>);</span><br><span class="line">	<span class="comment">// delete TestClass</span></span><br><span class="line">	wheel.<span class="built_in">recycle</span>(obj1);</span><br><span class="line">	TestClass* obj2 = <span class="built_in">NEW</span>(&amp;wheel, TestClass, <span class="number">50</span>, <span class="number">200</span>, <span class="number">999</span>);</span><br><span class="line">	wheel.<span class="built_in">recycle</span>(obj2);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+      
+    </div>
+    <div class="article-footer">
+      <blockquote class="mt-2x">
+  <ul class="post-copyright list-unstyled">
+    
+    <li class="post-copyright-link hidden-xs">
+      <strong>本文链接：</strong>
+      <a href="https://www.kill8g.com/2023/06/02/memory-pool/" title="一种特定环境使用的简易内存池" target="_blank" rel="external">https://www.kill8g.com/2023/06/02/memory-pool/</a>
+    </li>
+    
+    <li class="post-copyright-license">
+      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
+    </li>
+  </ul>
+</blockquote>
+
+
+<div class="panel panel-default panel-badger">
+  <div class="panel-body">
+    <figure class="media">
+      <div class="media-left">
+        <a href="https://github.com/kill8g" target="_blank" class="img-burn thumb-sm visible-lg">
+          <img src="/images/logo1.jpg" class="img-rounded w-full" alt="">
+        </a>
+      </div>
+      <div class="media-body">
+        <h3 class="media-heading"><a href="https://github.com/kill8g" target="_blank"><span class="text-dark">山中</span><small class="ml-1x">Developer</small></a></h3>
+        <div>游戏行业 后端developer</div>
+      </div>
+    </figure>
+  </div>
+</div>
+
+
+    </div>
+  </article>
+  
+    
+  <section id="comments">
+  	
+      <div id="vcomments"></div>
+    
+  </section>
+
+
+  
+</div>
+
+  <nav class="bar bar-footer clearfix" data-stick-bottom>
+  <div class="bar-inner">
+  
+  <ul class="pager pull-left">
+    
+    <li class="prev">
+      <a href="/2023/06/07/aoi/" title="游戏服务器AOI算法-九宫格"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
+    </li>
+    
+    
+    <li class="next">
+      <a href="/2023/05/29/threesum/" title="算法 16. 最接近的三数之和"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
+    </li>
+    
+    
+  </ul>
+  
+  
+  <!-- Button trigger modal -->
+  <button type="button" class="btn btn-fancy btn-donate pop-onhover bg-gradient-warning" data-toggle="modal" data-target="#donateModal"><span>赏</span></button>
+  <!-- <div class="wave-icon wave-icon-danger btn-donate" data-toggle="modal" data-target="#donateModal">
+    <div class="wave-circle"><span class="icon"><i class="icon icon-bill"></i></span></div>
+  </div> -->
+  
+  
+  <div class="bar-right">
+    
+    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
+    
+  </div>
+  </div>
+</nav>
+  
+<!-- Modal -->
+<div class="modal modal-center modal-small modal-xs-full fade" id="donateModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content donate">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <div class="modal-body">
+        <div class="donate-box">
+          <div class="donate-head">
+            <p>感谢您的支持，我会继续努力的!</p>
+          </div>
+          <div class="tab-content">
+            <div role="tabpanel" class="tab-pane fade active in" id="alipay">
+              <div class="donate-payimg">
+                <img src="/images/donate/alipayimg.jpg" alt="扫码支持" title="扫一扫" />
+              </div>
+              <p class="text-muted mv">扫码打赏，你说多少就多少</p>
+              <p class="text-grey">打开支付宝扫一扫，即可进行扫码打赏哦</p>
+            </div>
+            <div role="tabpanel" class="tab-pane fade" id="wechatpay">
+              <div class="donate-payimg">
+                <img src="/images/donate/wechatpayimg.jpg" alt="扫码支持" title="扫一扫" />
+              </div>
+              <p class="text-muted mv">扫码打赏，你说多少就多少</p>
+              <p class="text-grey">打开微信扫一扫，即可进行扫码打赏哦</p>
+            </div>
+          </div>
+          <div class="donate-footer">
+            <ul class="nav nav-tabs nav-justified" role="tablist">
+              <li role="presentation" class="active">
+                <a href="#alipay" id="alipay-tab" role="tab" data-toggle="tab" aria-controls="alipay" aria-expanded="true"><i class="icon icon-alipay"></i> 支付宝</a>
+              </li>
+              <li role="presentation" class="">
+                <a href="#wechatpay" role="tab" id="wechatpay-tab" data-toggle="tab" aria-controls="wechatpay" aria-expanded="false"><i class="icon icon-wepay"></i> 微信支付</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+</main>
+
+  <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
+	
+	
+    <ul class="social-links">
+    	
+        <li><a href="https://github.com/kill8g" target="_blank" title="Github" data-toggle=tooltip data-placement=top><i class="icon icon-github"></i></a></li>
+        
+    </ul>
+
+    <div class="copyright">
+    	
+        &copy; 2023 John Doe
+        
+        <div class="publishby">
+        	Theme by <a href="https://github.com/cofess" target="_blank"> cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.
+        </div>
+    </div>
+</footer>
+  <script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script>
+<script>
+window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
+</script>
+
+<script src="/js/plugin.min.js"></script>
+
+
+<script src="/js/application.js"></script>
+
+
+
+    <script>
+(function ($) {
+    $('.search-form').on('submit', function (e) {
+        var keyword = $('.search-form-input[name="wd"]').val();
+        window.location = 'https://www.baidu.com/s?wd=site:www.kill8g.com ' + keyword;
+        return false;
+    });
+})(jQuery);
+</script>
+
+
+
+
+   
+
+
+
+
+   
+    
+  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/valine"></script>
+  <script type="text/javascript">
+  var GUEST = ['nick', 'mail', 'link'];
+  var meta = 'nick,mail,link';
+  meta = meta.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#vcomments',
+    verify: false,
+    notify: false,
+    appId: 'chpRJDWJKRNocLBljQezqwMi-gzGzoHsz',
+    appKey: '3bC8bWGlDrur1ab5V4SjDuQ5',
+    placeholder: 'Just go go',
+    avatar: 'mm',
+    meta: meta,
+    pageSize: '10' || 10,
+    visitor: true
+  });
+  </script>
+
+     
+
+
+
+
+
+
+
+</body>
+</html>
