@@ -26,7 +26,7 @@
 <meta property="og:description" content="准备工作 安装cmake, 下载地址 https:&#x2F;&#x2F;cmake.org&#x2F; 安装python, 版本&gt;&#x3D;3.9即可 安装git 下载代码 git clone https:&#x2F;&#x2F;ghproxy.com&#x2F;https:&#x2F;&#x2F;github.com&#x2F;kill8g&#x2F;llama.cpp.git  windows 环境 安装 visual studio, 版本&gt;&#x3D;2017即可 安装 CUDA, 可选, 不">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2023-09-13T06:37:55.000Z">
-<meta property="article:modified_time" content="2023-09-15T05:49:34.528Z">
+<meta property="article:modified_time" content="2023-09-18T09:27:03.497Z">
 <meta property="article:author" content="John Doe">
 <meta property="article:tag" content="llama">
 <meta name="twitter:card" content="summary">
@@ -337,10 +337,10 @@
         <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2023/09/13/llama-cpp/#comments" class="article-comment-link">评论</a></span>
         
 	
-		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 766(字)</span>
+		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 934(字)</span>
 	
 	
-		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 3(分)</span>
+		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 4(分)</span>
 	
 
       </div>
@@ -396,6 +396,9 @@
 <h1 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"># windows</span><br><span class="line">build\bin\Release\server.exe -m models\7B\ggml-model-q4_k.gguf ^</span><br><span class="line">	-c 2048 ^</span><br><span class="line">	-b 4096 ^</span><br><span class="line">	-t 8 ^</span><br><span class="line">	--host 127.0.0.1 ^</span><br><span class="line">	--port 8090</span><br><span class="line"></span><br><span class="line"># linux</span><br><span class="line">./build/bin/server -m models\7B\ggml-model-q4_k.gguf -c 2048 -b 4096 -t 8 --host 127.0.0.1 --port 8090</span><br><span class="line"></span><br><span class="line">-t 参数代表线程, 根据你的实际情况决定</span><br><span class="line">跟多参数请 server -h</span><br><span class="line">直接命令行环境使用 main -m models\7B\ggml-model-q4_k.gguf -ins</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
 <h1 id="常见报错"><a href="#常见报错" class="headerlink" title="常见报错"></a>常见报错</h1><p>No CUDA toolset found<br>一般是安装CUDA时没有勾选<code>Visual Studio Integration</code><br>将<code>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\extras\visual_studio_integration\MSBuildExtensions</code>里的文件复制粘贴到你的 Visual Studio <code>BuildCustomizations</code>文件夹, 以<code>VS2022</code>为例, <code>BuildCustomizations</code>的路径是<code>MSBuild\Microsoft\VC\v170\BuildCustomizations</code>, 其他版本的Visual Studio请自行上网搜索<code>No CUDA toolset found</code>即可</p>
+<h1 id="性能检查"><a href="#性能检查" class="headerlink" title="性能检查"></a>性能检查</h1><p>检查是否有正确使用到cuBLAS(如果有开启cuBLAS加速)<br><code>main.exe -ngl 200000 -p &quot;Please sir, may I have some&quot; -m 模型路径</code><br>如果有输出类似与下面的内容说明cuBLAS功能正常</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">llama_model_load_internal: [cublas] offloading 60 layers to GPU</span><br><span class="line">llama_model_load_internal: [cublas] offloading output layer to GPU</span><br><span class="line">llama_model_load_internal: [cublas] total VRAM used: 17223 MB</span><br></pre></td></tr></table></figure>
+<p>检查线程数量是否合理, 线程数量并非越多越好, 线程数太多可能反而降低token生成速度<br>将以下命令执行数次, 每次选择不同的线程数, 查看输出log中<code>prompt eval time</code>时间变化<br><code>main.exe -ngl 200000 -p &quot;Please sir, may I have some&quot; -m 模型路径 -t 线程数</code></p>
 
       
     </div>
