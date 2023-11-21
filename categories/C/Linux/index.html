@@ -17,21 +17,19 @@
   <meta http-equiv="window-target" content="_top" />
   
   
-  <title>单线程lua程序如何检测死循环 | 山中</title>
-  <meta name="description" content="lua底层没有提供检查死循环的接口, 在不影响性能的情况下, 比较可行的方法是检测脚本执行时间, 超过一定的时限, 就认为存在死循环多线程下, 可以在其他线程中监测是否存在执行时间异常的脚本, 单线程下就会麻烦一点这里提供一种单线程下的死循环检查方法, 通过lua_sethook跟signal来解决死循环问题 12345678910111213141516171819202122232425262">
-<meta property="og:type" content="article">
-<meta property="og:title" content="单线程lua程序如何检测死循环">
-<meta property="og:url" content="https://www.kill8g.com/2023/03/08/%E5%8D%95%E7%BA%BF%E7%A8%8Blua%E7%A8%8B%E5%BA%8F%E5%A6%82%E4%BD%95%E6%A3%80%E6%B5%8B%E6%AD%BB%E5%BE%AA%E7%8E%AF/index.html">
+  <title>分类: Linux | 山中</title>
+  <meta name="description" content="山中的个人博客">
+<meta property="og:type" content="website">
+<meta property="og:title" content="山中">
+<meta property="og:url" content="https://www.kill8g.com/categories/C/Linux/index.html">
 <meta property="og:site_name" content="山中">
-<meta property="og:description" content="lua底层没有提供检查死循环的接口, 在不影响性能的情况下, 比较可行的方法是检测脚本执行时间, 超过一定的时限, 就认为存在死循环多线程下, 可以在其他线程中监测是否存在执行时间异常的脚本, 单线程下就会麻烦一点这里提供一种单线程下的死循环检查方法, 通过lua_sethook跟signal来解决死循环问题 12345678910111213141516171819202122232425262">
+<meta property="og:description" content="山中的个人博客">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2023-03-08T09:50:48.000Z">
-<meta property="article:modified_time" content="2023-03-13T01:05:48.094Z">
 <meta property="article:author" content="John Doe">
-<meta property="article:tag" content="lua">
+<meta property="article:tag" content="linux,c&#x2F;c++,python,lua,ios,u3d">
 <meta name="twitter:card" content="summary">
   <!-- Canonical links -->
-  <link rel="canonical" href="https://www.kill8g.com/2023/03/08/%E5%8D%95%E7%BA%BF%E7%A8%8Blua%E7%A8%8B%E5%BA%8F%E5%A6%82%E4%BD%95%E6%A3%80%E6%B5%8B%E6%AD%BB%E5%BE%AA%E7%8E%AF/index.html">
+  <link rel="canonical" href="https://www.kill8g.com/categories/C/Linux/index.html">
   
   
     <link rel="icon" href="/favicon.png" type="image/x-icon">
@@ -292,193 +290,83 @@
 </aside>
 
   
-  
-<main class="main" role="main">
-  <div class="content">
-  <article id="post-单线程lua程序如何检测死循环" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting">
-    
-    <div class="article-header">
-      
-        
-  
-    <h1 class="article-title" itemprop="name">
-      单线程lua程序如何检测死循环
-    </h1>
-  
-
-      
-      <div class="article-meta">
-        <span class="article-date">
-    <i class="icon icon-calendar-check"></i>
-	<a href="/2023/03/08/%E5%8D%95%E7%BA%BF%E7%A8%8Blua%E7%A8%8B%E5%BA%8F%E5%A6%82%E4%BD%95%E6%A3%80%E6%B5%8B%E6%AD%BB%E5%BE%AA%E7%8E%AF/" class="article-date">
-	  <time datetime="2023-03-08T09:50:48.000Z" itemprop="datePublished">2023-03-08</time>
-	</a>
-</span>
-        
-  <span class="article-category">
-    <i class="icon icon-folder"></i>
-    <a class="article-category-link" href="/categories/lua/">lua</a>
-  </span>
-
-        
-  <span class="article-tag">
-    <i class="icon icon-tags"></i>
-	<a class="article-tag-link-link" href="/tags/lua/" rel="tag">lua</a>
-  </span>
-
-
-        
-
-	<span class="article-read hidden-xs">
-    	<i class="icon icon-eye-fill" aria-hidden="true"></i>
-    	<span id="/2023/03/08/%E5%8D%95%E7%BA%BF%E7%A8%8Blua%E7%A8%8B%E5%BA%8F%E5%A6%82%E4%BD%95%E6%A3%80%E6%B5%8B%E6%AD%BB%E5%BE%AA%E7%8E%AF/" class="leancloud_visitors"  data-flag-title="单线程lua程序如何检测死循环">0</span>
-    </span>
-
-        <span class="post-comment"><i class="icon icon-comment"></i> <a href="/2023/03/08/%E5%8D%95%E7%BA%BF%E7%A8%8Blua%E7%A8%8B%E5%BA%8F%E5%A6%82%E4%BD%95%E6%A3%80%E6%B5%8B%E6%AD%BB%E5%BE%AA%E7%8E%AF/#comments" class="article-comment-link">评论</a></span>
-        
-	
-		<span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 393(字)</span>
-	
-	
-		<span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 1(分)</span>
-	
-
-      </div>
+  <main class="main" role="main">
+  <article class="content article article-categories article-type-list" itemscope="">
+    <header class="article-header">
+      <h1 itemprop="name" class="hidden-xs">分类: Linux</h1>
+      <p class="hidden-xs">共 1 篇文章</p>
+      <nav role="navigation" id="nav-main" class="okayNav">
+        <ul>
+          <li><a href="/categories">All</a></li>
+          
+          <li><a href="/categories/Linux/">Linux</a></li>
+          
+          <li><a href="/categories/lua/">lua</a></li>
+          
+          <li><a href="/categories/mongo/">mongo</a></li>
+          
+          <li><a href="/categories/docker/">docker</a></li>
+          
+          <li><a href="/categories/mongo/python/">python</a></li>
+          
+          <li><a href="/categories/AI/">AI</a></li>
+          
+          <li><a href="/categories/Linux/Android/">Android</a></li>
+          
+          <li><a href="/categories/Linux/OLLVM/">OLLVM</a></li>
+          
+          <li><a href="/categories/server/">server</a></li>
+          
+          <li><a href="/categories/LeetCode/">LeetCode</a></li>
+          
+          <li><a href="/categories/C/">C++</a></li>
+          
+          <li><a href="/categories/C/lua/">lua</a></li>
+          
+          <li><a href="/categories/redis/">redis</a></li>
+          
+          <li><a href="/categories/其他/">其他</a></li>
+          
+          <li><a href="/categories/C/http/">http</a></li>
+          
+          <li><a href="/categories/C/http/lua/">lua</a></li>
+          
+          <li><a href="/categories/C/Linux/">Linux</a></li>
+          
+        </ul>
+      </nav>
+    </header>
+    <!-- /header -->
+    <div class="article-body">
+      <div class="panel panel-default b-no">
+    <div class="panel-heading" role="tab">
+        <h4 class="panel-title">
+            <a data-toggle="collapse" href="#collapseLinux" aria-expanded="true">
+              <i class="icon icon-folder text-active"></i><i class="icon icon-folder-open text"></i>
+              Linux
+            </a>
+            <small class="text-muted">(Total 1 articles)</small>
+        </h4>
     </div>
-    <div class="article-entry marked-body" itemprop="articleBody">
-      
-        <p>lua底层没有提供检查死循环的接口, 在不影响性能的情况下, 比较可行的方法是检测脚本执行时间, 超过一定的时限, 就认为存在死循环<br>多线程下, 可以在其他线程中监测是否存在执行时间异常的脚本, 单线程下就会麻烦一点<br>这里提供一种单线程下的死循环检查方法, 通过<strong>lua_sethook</strong>跟<strong>signal</strong>来解决死循环问题</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">static</span> <span class="type">void</span> <span class="title">lstop</span> <span class="params">(lua_State * L, lua_Debug * ar)</span> </span>&#123;</span><br><span class="line">	(<span class="type">void</span>)ar;  <span class="comment">/* unused arg. */</span></span><br><span class="line">	<span class="built_in">lua_sethook</span>(L, <span class="literal">NULL</span>, <span class="number">0</span>, <span class="number">0</span>);  <span class="comment">/* reset hook */</span></span><br><span class="line">	<span class="comment">// 抛出一个错误</span></span><br><span class="line">	<span class="built_in">luaL_error</span>(L, <span class="string">&quot;There may be an endless loop !&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">static</span> <span class="type">void</span> <span class="title">laction</span> <span class="params">(<span class="type">int</span> i)</span> </span>&#123;</span><br><span class="line">	<span class="built_in">signal</span>(i, SIG_DFL); <span class="comment">/* if another SIGINT happens, terminate process */</span></span><br><span class="line">	<span class="comment">/*</span></span><br><span class="line"><span class="comment">	  设置钩子函数, 当调用一个函数时, 从一个函数中返回时, 执行指定数量的指令时</span></span><br><span class="line"><span class="comment">	  就会执行一次钩子函数 lstop</span></span><br><span class="line"><span class="comment">	 */</span></span><br><span class="line">	<span class="built_in">lua_sethook</span>(L, lstop, LUA_MASKCALL | LUA_MASKRET | LUA_MASKCOUNT, <span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">run</span><span class="params">(<span class="type">const</span> <span class="type">char</span> * path)</span> </span>&#123;</span><br><span class="line">	L = <span class="built_in">luaL_newstate</span>();</span><br><span class="line">	<span class="built_in">luaL_openlibs</span>(L);</span><br><span class="line">	<span class="built_in">luaL_checkversion</span>(L);</span><br><span class="line"></span><br><span class="line">	<span class="type">int</span> result = <span class="built_in">luaL_loadfile</span>(L, path);</span><br><span class="line">	<span class="keyword">if</span> (result != <span class="number">0</span>) &#123;</span><br><span class="line">		<span class="type">const</span> <span class="type">char</span> * error = <span class="built_in">lua_tostring</span>(L, <span class="number">-1</span>);</span><br><span class="line">		_EXIT_(<span class="string">&quot;Load lua file [%s] failed, error : %s\n&quot;</span>, path, error);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="built_in">alarm</span>(<span class="number">5</span>); <span class="comment">/*设置闹钟 一个进程只能有一个闹钟时间*/</span></span><br><span class="line">	<span class="built_in">signal</span>(SIGALRM, laction); <span class="comment">/*闹钟触发后, 调用laction*/</span></span><br><span class="line">	result = <span class="built_in">lua_pcall</span>(L, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">	<span class="built_in">alarm</span>(<span class="number">0</span>); <span class="comment">/*取消闹钟*/</span></span><br><span class="line">	<span class="built_in">signal</span>(SIGALRM, SIG_DFL); <span class="comment">/*SIGALRM恢复为默认信号处理程序*/</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (result != <span class="number">0</span>) &#123;</span><br><span class="line">		<span class="type">const</span> <span class="type">char</span> * error = <span class="built_in">lua_tostring</span>(L, <span class="number">-1</span>);</span><br><span class="line">		_EXIT_(<span class="string">&quot;Call lua failed, error : %s\n&quot;</span>, error);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	_EXIT_(<span class="string">&quot;Exit the lua VM\n&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="keyword">local</span> loop = <span class="literal">true</span></span><br><span class="line">	<span class="keyword">while</span> loop <span class="keyword">do</span></span><br><span class="line">	<span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line">main()</span><br></pre></td></tr></table></figure>
-<p>启动测试, 5s后可以看到死循环被中断了</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Call lua failed, error : script.lua:6: There may be an endless loop !</span><br></pre></td></tr></table></figure>
+    <div id="collapseLinux" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingLinux">
+        <div class="panel-body">
+            <div class="collection">
+              
+                
+<a href="/2023/11/21/curl/" class="collection-item"   itemprop="url">
+  <time datetime="2023-11-21T06:51:26.000Z" itemprop="datePublished">2023-11-21</time>
+  <span>&nbsp;&nbsp;&nbsp;</span> 服务器CURL卡死事故
+</a>
 
-      
+
+              
+            </div>
+        </div>
     </div>
-    <div class="article-footer">
-      <blockquote class="mt-2x">
-  <ul class="post-copyright list-unstyled">
-    
-    <li class="post-copyright-link hidden-xs">
-      <strong>本文链接：</strong>
-      <a href="https://www.kill8g.com/2023/03/08/%E5%8D%95%E7%BA%BF%E7%A8%8Blua%E7%A8%8B%E5%BA%8F%E5%A6%82%E4%BD%95%E6%A3%80%E6%B5%8B%E6%AD%BB%E5%BE%AA%E7%8E%AF/" title="单线程lua程序如何检测死循环" target="_blank" rel="external">https://www.kill8g.com/2023/03/08/单线程lua程序如何检测死循环/</a>
-    </li>
-    
-    <li class="post-copyright-license">
-      <strong>版权声明： </strong> 本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！
-    </li>
-  </ul>
-</blockquote>
-
-
-<div class="panel panel-default panel-badger">
-  <div class="panel-body">
-    <figure class="media">
-      <div class="media-left">
-        <a href="https://github.com/kill8g" target="_blank" class="img-burn thumb-sm visible-lg">
-          <img src="/images/logo1.jpg" class="img-rounded w-full" alt="">
-        </a>
-      </div>
-      <div class="media-body">
-        <h3 class="media-heading"><a href="https://github.com/kill8g" target="_blank"><span class="text-dark">山中</span><small class="ml-1x">Developer</small></a></h3>
-        <div>游戏行业 后端developer</div>
-      </div>
-    </figure>
-  </div>
 </div>
-
-
     </div>
   </article>
-  
-    
-  <section id="comments">
-  	
-      <div id="vcomments"></div>
-    
-  </section>
-
-
-  
-</div>
-
-  <nav class="bar bar-footer clearfix" data-stick-bottom>
-  <div class="bar-inner">
-  
-  <ul class="pager pull-left">
-    
-    <li class="prev">
-      <a href="/2023/03/14/%E5%AF%BB%E6%89%BE%E4%B8%A4%E4%B8%AA%E6%AD%A3%E5%BA%8F%E6%95%B0%E7%BB%84%E7%9A%84%E4%B8%AD%E4%BD%8D%E6%95%B0/" title="算法 4. 寻找两个正序数组的中位数"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a>
-    </li>
-    
-    
-    <li class="next">
-      <a href="/2023/03/07/linux%E4%B8%8BC%E7%A8%8B%E5%BA%8FCPU%E5%8D%A0%E7%94%A8%E7%8E%87%E5%A4%AA%E9%AB%98%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5/" title="linux下C程序CPU占用率太高问题排查"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a>
-    </li>
-    
-    
-  </ul>
-  
-  
-  <!-- Button trigger modal -->
-  <button type="button" class="btn btn-fancy btn-donate pop-onhover bg-gradient-warning" data-toggle="modal" data-target="#donateModal"><span>赏</span></button>
-  <!-- <div class="wave-icon wave-icon-danger btn-donate" data-toggle="modal" data-target="#donateModal">
-    <div class="wave-circle"><span class="icon"><i class="icon icon-bill"></i></span></div>
-  </div> -->
-  
-  
-  <div class="bar-right">
-    
-    <div class="share-component" data-sites="weibo,qq,wechat,facebook,twitter" data-mobile-sites="weibo,qq,qzone"></div>
-    
-  </div>
-  </div>
-</nav>
-  
-<!-- Modal -->
-<div class="modal modal-center modal-small modal-xs-full fade" id="donateModal" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content donate">
-      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-      <div class="modal-body">
-        <div class="donate-box">
-          <div class="donate-head">
-            <p>感谢您的支持，我会继续努力的!</p>
-          </div>
-          <div class="tab-content">
-            <div role="tabpanel" class="tab-pane fade active in" id="alipay">
-              <div class="donate-payimg">
-                <img src="/images/donate/alipayimg.jpg" alt="扫码支持" title="扫一扫" />
-              </div>
-              <p class="text-muted mv">扫码打赏，你说多少就多少</p>
-              <p class="text-grey">打开支付宝扫一扫，即可进行扫码打赏哦</p>
-            </div>
-            <div role="tabpanel" class="tab-pane fade" id="wechatpay">
-              <div class="donate-payimg">
-                <img src="/images/donate/wechatpayimg.jpg" alt="扫码支持" title="扫一扫" />
-              </div>
-              <p class="text-muted mv">扫码打赏，你说多少就多少</p>
-              <p class="text-grey">打开微信扫一扫，即可进行扫码打赏哦</p>
-            </div>
-          </div>
-          <div class="donate-footer">
-            <ul class="nav nav-tabs nav-justified" role="tablist">
-              <li role="presentation" class="active">
-                <a href="#alipay" id="alipay-tab" role="tab" data-toggle="tab" aria-controls="alipay" aria-expanded="true"><i class="icon icon-alipay"></i> 支付宝</a>
-              </li>
-              <li role="presentation" class="">
-                <a href="#wechatpay" role="tab" id="wechatpay-tab" data-toggle="tab" aria-controls="wechatpay" aria-expanded="false"><i class="icon icon-wepay"></i> 微信支付</a>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-
+   
 </main>
 
   <footer class="footer" itemscope itemtype="http://schema.org/WPFooter">
@@ -523,37 +411,6 @@ window.jQuery || document.write('<script src="js/jquery.min.js"><\/script>')
 
 
 
-
-   
-
-
-
-
-   
-    
-  <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/valine"></script>
-  <script type="text/javascript">
-  var GUEST = ['nick', 'mail', 'link'];
-  var meta = 'nick,mail,link';
-  meta = meta.split(',').filter(function(item) {
-    return GUEST.indexOf(item) > -1;
-  });
-  new Valine({
-    el: '#vcomments',
-    verify: false,
-    notify: false,
-    appId: 'chpRJDWJKRNocLBljQezqwMi-gzGzoHsz',
-    appKey: '3bC8bWGlDrur1ab5V4SjDuQ5',
-    placeholder: 'Just go go',
-    avatar: 'mm',
-    meta: meta,
-    pageSize: '10' || 10,
-    visitor: true
-  });
-  </script>
-
-     
 
 
 
